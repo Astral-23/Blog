@@ -1,0 +1,35 @@
+{
+  "name": "blog_starter_20260315",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "publish": "npm run lint && npm run build",
+    "dev:minimal": "THEME_VARIANT=minimal npm run dev",
+    "dev:labnote": "THEME_VARIANT=labnote npm run dev",
+    "dev:magazine": "THEME_VARIANT=magazine npm run dev",
+    "preview": "npm run build && npm run start"
+  },
+  "dependencies": {
+    "gray-matter": "^4.0.3",
+    "next": "16.1.6",
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "react-markdown": "^10.1.0",
+    "rehype-katex": "^7.0.1",
+    "rehype-raw": "^7.0.0",
+    "remark-gfm": "^4.0.1",
+    "remark-math": "^6.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.1.6",
+    "typescript": "^5"
+  }
+}

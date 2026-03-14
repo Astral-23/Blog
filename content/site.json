@@ -1,0 +1,10 @@
+{
+  "title": "Hutaro Blog",
+  "description": "Markdown driven blog",
+  "fontVariant": "classic",
+  "navigation": [
+    { "href": "/", "label": "home" },
+    { "href": "/blog", "label": "blog" },
+    { "href": "/blog-tech", "label": "blog-tech" }
+  ]
+}

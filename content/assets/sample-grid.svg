@@ -1,0 +1,10 @@
+<svg width="960" height="540" viewBox="0 0 960 540" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="960" height="540" fill="#f8f6ef"/>
+  <g stroke="#d9cdb7" stroke-width="1">
+    <path d="M0 60H960"/><path d="M0 120H960"/><path d="M0 180H960"/><path d="M0 240H960"/><path d="M0 300H960"/><path d="M0 360H960"/><path d="M0 420H960"/><path d="M0 480H960"/>
+    <path d="M80 0V540"/><path d="M160 0V540"/><path d="M240 0V540"/><path d="M320 0V540"/><path d="M400 0V540"/><path d="M480 0V540"/><path d="M560 0V540"/><path d="M640 0V540"/><path d="M720 0V540"/><path d="M800 0V540"/><path d="M880 0V540"/>
+  </g>
+  <rect x="120" y="110" width="720" height="320" rx="24" fill="#ffffff" stroke="#d9cdb7"/>
+  <text x="480" y="250" text-anchor="middle" fill="#3f3a33" font-size="48" font-family="Arial, sans-serif">Sample Asset</text>
+  <text x="480" y="300" text-anchor="middle" fill="#6b6358" font-size="24" font-family="Arial, sans-serif">content/assets/sample-grid.svg</text>
+</svg>
