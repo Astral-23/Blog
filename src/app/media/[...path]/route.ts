@@ -11,8 +11,9 @@ export async function GET(_: Request, { params }: RouteProps) {
   const { path: segments } = await params;
   const requested = path.join(...segments);
   const resolved = path.resolve(ASSET_ROOT, requested);
+  const relative = path.relative(ASSET_ROOT, resolved);
 
-  if (!resolved.startsWith(ASSET_ROOT)) {
+  if (relative.startsWith("..") || path.isAbsolute(relative)) {
     return new Response("Invalid path", { status: 400 });
   }
 
@@ -30,6 +31,8 @@ export async function GET(_: Request, { params }: RouteProps) {
     ".gif": "image/gif",
     ".webp": "image/webp",
     ".svg": "image/svg+xml",
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
   };
 
   return new Response(file, {

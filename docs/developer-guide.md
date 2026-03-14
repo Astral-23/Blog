@@ -35,7 +35,7 @@
 - `summary` Frontmatter があれば一覧説明文に優先し、未指定時は本文から自動生成する。
 - 画像パスは `assets/...` 形式を標準とし、変換ロジックを `MarkdownContent` に集約する。
 - Frontmatter必須化は現時点では行わない。将来導入時は後方互換を保つ。
-- HTMLタグは `rehype-raw` で有効化済み。使える範囲を増やすときはXSSリスク評価を先に行う。
+- HTMLタグは `rehype-raw + rehype-sanitize` で制御する。許可タグ追加時はXSSリスク評価を先に行う。
 
 ## 5. 日付・メタ情報運用
 - `publishedAt`: Git初回コミット日時
@@ -75,7 +75,7 @@ MNIST系デモを追加する場合の推奨分割:
 3. 変更実装
 4. `npm run lint`
 5. `npm run build`
-6. 問題なければ `npm run publish`
+6. 問題なければ `npm run publish:secure`
 
 テーマ比較:
 - `npm run dev:minimal`

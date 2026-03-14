@@ -243,6 +243,16 @@ a {
   margin: 1rem 0;
 }
 
+.markdown-video {
+  width: 100%;
+  max-width: 100%;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  display: block;
+  margin: 1rem 0;
+  background: #000;
+}
+
 .markdown-body pre {
   background: #111;
   color: #f6f6f6;
