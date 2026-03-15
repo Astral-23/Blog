@@ -81,7 +81,11 @@ function makePost(filePath: string, section: Section): Post {
   const raw = readText(filePath);
   const parsed = matter(raw);
   const content = parsed.content;
-  const title = guessTitle(content, slug);
+  const customTitle =
+    typeof parsed.data.title === "string" && parsed.data.title.trim().length > 0
+      ? parsed.data.title.trim()
+      : null;
+  const title = customTitle ?? guessTitle(content, slug);
   const customSummary =
     typeof parsed.data.summary === "string" && parsed.data.summary.trim().length > 0
       ? parsed.data.summary.trim()
