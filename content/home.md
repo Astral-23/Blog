@@ -2,9 +2,17 @@
 
 
 
-![fuko](assets/IMG_4014.jpg "caption=トレース伊吹風子。かわえぇ〜; width=100%")
+![fuko](assets/fuko_top.jpg "caption=トレース伊吹風子。かわえぇ〜; width=100%")
 
 個人が運営するブログ。人に読まれる事を想定した文章を書きます。
+
+
+<br>
+
+## 最新の記事
+---
+
+<md-embed type="latestPosts" source="all" count="5"></md-embed>
 
 
 <br>
@@ -12,7 +20,7 @@
 ## 伊吹風子 生誕日予報
 ---
 
-:::ticker text="伊吹風子の誕生日まであと {{countdown:7-20}}日" speed=0 color=#60a136:::
+<md-embed type="ticker" text="伊吹風子の誕生日まであと {{countdown:7-20}}日" speed="0" color="#60a136"></md-embed>
 
 
 <br>

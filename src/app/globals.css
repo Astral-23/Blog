@@ -133,6 +133,9 @@ a {
   font-size: 1.15rem;
   font-weight: var(--font-heading-weight);
   letter-spacing: var(--font-title-letter-spacing);
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35ch;
 }
 
 .nav-list {
@@ -193,20 +196,50 @@ a {
   border: 1px solid var(--line);
   background: var(--surface);
   border-radius: 14px;
-  padding: 1rem 1.1rem;
+  overflow: hidden;
 }
 
-.post-card h2 {
+.post-card-link {
+  display: block;
+  padding: 1rem 1.1rem;
+  color: inherit;
+  text-decoration: none;
+  height: 100%;
+}
+
+.post-card-link:hover {
+  background: color-mix(in oklab, var(--surface) 78%, var(--accent) 8%);
+}
+
+.markdown-body .post-list {
+  margin: 0;
+  padding: 0;
+}
+
+.markdown-body .post-card-link {
+  color: inherit;
+  text-decoration: none;
+}
+
+.markdown-body .post-card-link:hover {
+  text-decoration: none;
+}
+
+.post-list .post-card h2 {
   margin: 0.1rem 0 0.4rem;
   font-family: var(--font-heading);
   font-size: 1.2rem;
   font-weight: var(--font-heading-weight);
 }
 
-.post-date {
+.post-list .post-card .post-card-link > .post-date {
   margin: 0;
   color: var(--muted);
   font-size: 0.9rem;
+}
+
+.post-list .post-card .post-card-link > p:not(.post-date) {
+  margin: 1em 0;
 }
 
 .post-meta {
@@ -311,6 +344,62 @@ a {
 .markdown-body summary {
   cursor: pointer;
   font-weight: 600;
+}
+
+.embed-latest-posts {
+  margin: 1.2rem 0;
+  padding: 0.9rem 1rem;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: color-mix(in oklab, var(--surface) 94%, var(--accent) 6%);
+}
+
+.embed-title {
+  margin: 0 0 0.7rem;
+  font-family: var(--font-heading);
+  font-size: 0.9rem;
+  font-weight: var(--font-heading-weight);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.embed-latest-posts-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.embed-latest-posts-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.embed-latest-posts-item a {
+  text-decoration: none;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.embed-latest-posts-item a:hover {
+  text-decoration: underline;
+  text-underline-offset: 0.15rem;
+}
+
+.embed-latest-posts-item time {
+  color: var(--muted);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+
+.embed-note,
+.embed-error {
+  margin: 1rem 0;
+  color: var(--muted);
 }
 
 .ticker {
@@ -420,5 +509,11 @@ a {
 
   .page-wrap {
     padding-top: 1.5rem;
+  }
+
+  .embed-latest-posts-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.2rem;
   }
 }

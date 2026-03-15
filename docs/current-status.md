@@ -28,9 +28,9 @@
 - サイト設定:
   - `content/site.json` で `title/description/navigation/fontVariant`
 
-## 3. ticker仕様
+## 3. ticker埋め込み仕様
 - 記法:
-  - `:::ticker text="..." speed=... color=...:::`
+  - `<md-embed type="ticker" text="..." speed="..." color="..."></md-embed>`
 - `speed`:
   - 1秒あたりの往復回数
   - `speed=0` は位置固定
@@ -41,7 +41,7 @@
 
 例:
 ```md
-:::ticker text="伊吹風子の誕生日まであと {{countdown:7-20}}日" speed=0 color=#60a136:::
+<md-embed type="ticker" text="伊吹風子の誕生日まであと {{countdown:7-20}}日" speed="0" color="#60a136"></md-embed>
 ```
 
 ## 4. セキュリティ対応

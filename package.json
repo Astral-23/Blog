@@ -6,6 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:install": "playwright install chromium",
     "lint": "eslint",
     "publish": "npm run lint && npm run build",
     "dev:minimal": "THEME_VARIANT=minimal npm run dev",
@@ -13,7 +19,7 @@
     "dev:magazine": "THEME_VARIANT=magazine npm run dev",
     "preview": "npm run build && npm run start",
     "security": "npm audit --audit-level=high",
-    "publish:secure": "npm run lint && npm run build && npm run security",
+    "publish:secure": "npm run lint && npm run test && npm run build && npm run security",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "assets:optimize:dry": "node scripts/optimize-assets.mjs --dry-run",
     "assets:resize": "node scripts/optimize-assets.mjs"
@@ -32,11 +38,17 @@
     "sharp": "^0.34.5"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^4.1.0",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
-    "typescript": "^5"
+    "jsdom": "^29.0.0",
+    "typescript": "^5",
+    "vitest": "^4.1.0"
   }
 }

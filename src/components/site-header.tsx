@@ -8,7 +8,14 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="site-header-inner">
         <Link className="site-title" href="/">
-          {settings.title}
+          {settings.titleSegments.map((segment, index) => (
+            <span
+              key={`${segment.text}-${index}`}
+              style={{ fontSize: `${segment.size}em` }}
+            >
+              {segment.text}
+            </span>
+          ))}
         </Link>
         <nav aria-label="Global">
           <ul className="nav-list">

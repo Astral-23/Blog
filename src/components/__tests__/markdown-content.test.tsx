@@ -1,0 +1,32 @@
+import React from "react";
+import { render, screen } from "@testing-library/react";
+import { describe, expect, it, vi } from "vitest";
+import { MarkdownContent } from "@/components/markdown-content";
+
+const renderEmbedMock = vi.fn(() => <div data-testid="embed-result">ok</div>);
+
+vi.mock("@/components/embeds/embed-registry", () => ({
+  renderEmbed: (payload: unknown) => renderEmbedMock(payload),
+}));
+
+describe("MarkdownContent", () => {
+  it("renders md-embed via embed registry", () => {
+    render(
+      <MarkdownContent
+        source={'<md-embed type="latestPosts" source="all" count="3"></md-embed>'}
+      />,
+    );
+
+    expect(screen.getByTestId("embed-result")).toBeInTheDocument();
+    expect(renderEmbedMock).toHaveBeenCalledWith({
+      type: "latestPosts",
+      attrs: { source: "all", count: "3" },
+    });
+  });
+
+  it("blocks javascript links", () => {
+    render(<MarkdownContent source={'[danger](javascript:alert("x"))'} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.getByText("danger")).toBeInTheDocument();
+  });
+});

@@ -1,11 +1,12 @@
 import ReactMarkdown from "react-markdown";
+import type { Components } from "react-markdown";
 import type { ReactNode } from "react";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
-import { Ticker } from "@/components/ticker";
+import { renderEmbed } from "@/components/embeds/embed-registry";
 
 type MarkdownContentProps = {
   source: string;
@@ -21,7 +22,7 @@ type ImageMeta = {
 
 const sanitizeSchema = {
   ...defaultSchema,
-  tagNames: [...(defaultSchema.tagNames ?? []), "details", "summary", "video", "source"],
+  tagNames: [...(defaultSchema.tagNames ?? []), "details", "summary", "video", "source", "md-embed"],
   attributes: {
     ...(defaultSchema.attributes ?? {}),
     code: [...((defaultSchema.attributes?.code as unknown[]) ?? []), ["className", /^language-./], "className"],
@@ -30,6 +31,7 @@ const sanitizeSchema = {
       ...((defaultSchema.attributes?.div as unknown[]) ?? []),
       "className",
       "data-color",
+      "data-embed",
     ],
     a: [...((defaultSchema.attributes?.a as unknown[]) ?? []), "target", "rel"],
     video: [
@@ -47,6 +49,7 @@ const sanitizeSchema = {
       "className",
     ],
     source: [...((defaultSchema.attributes?.source as unknown[]) ?? []), "src", "type"],
+    "md-embed": ["type", "count", "source", "text", "speed", "color", "layout"],
   },
 };
 
@@ -148,82 +151,119 @@ function mapSafeHref(href?: string): string | undefined {
   return href;
 }
 
-function parseTickerAttributes(input: string): Record<string, string> {
-  const attrs: Record<string, string> = {};
-  const attrPattern = /(\w+)=("([^"]*)"|([^\s]+))/g;
-  let match: RegExpExecArray | null;
-  while ((match = attrPattern.exec(input)) !== null) {
-    const key = match[1].toLowerCase();
-    const value = (match[3] ?? match[4] ?? "").trim();
-    attrs[key] = value;
-  }
-  return attrs;
-}
-
-function toTickerTag(raw: string): string {
-  const pattern = /:::ticker\s+([\s\S]+?):::/g;
-  return raw.replace(pattern, (_, attrText: string) => {
-    const attrs = parseTickerAttributes(attrText);
-    const text = attrs.text ?? "";
-    const speed = attrs.speed ?? "0.08";
-    const color = attrs.color ?? "rainbow";
-    const escapedText = text
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
-    const escapedColor = color
-      .replaceAll("&", "&amp;")
-      .replaceAll("<", "&lt;")
-      .replaceAll(">", "&gt;")
-      .replaceAll('"', "&quot;");
-    const rawColor = escapedColor.replace(/^#/, "").toLowerCase();
-    const colorToken =
-      rawColor === "rainbow" || rawColor === "white" || rawColor === "accent"
-        ? `kw-${rawColor}`
-        : `hex-${rawColor.replace(/[^0-9a-f]/g, "")}`;
-    return `<div class="md-ticker speed-${speed} color-${colorToken}">${escapedText}</div>`;
-  });
-}
-
-function resolveTickerDuration(value: unknown): number | null {
-  if (value === "slow") {
-    return 12;
-  }
-  if (value === "fast") {
-    return 3;
-  }
-  if (value === "normal") {
-    return 6;
-  }
-  if (typeof value === "string") {
-    const roundTripsPerSec = Number.parseFloat(value);
-    if (!Number.isNaN(roundTripsPerSec) && roundTripsPerSec > 0) {
-      const halfTripDuration = 1 / (2 * roundTripsPerSec);
-      return Math.max(0.25, Math.min(60, halfTripDuration));
-    }
-    if (!Number.isNaN(roundTripsPerSec) && roundTripsPerSec <= 0) {
-      return null;
-    }
-  }
-  return 6;
-}
-
-function flattenText(node: ReactNode): string {
-  if (typeof node === "string") {
-    return node;
-  }
-  if (typeof node === "number") {
-    return String(node);
-  }
-  if (Array.isArray(node)) {
-    return node.map((part) => flattenText(part)).join("");
-  }
-  return "";
-}
-
 export function MarkdownContent({ source }: MarkdownContentProps) {
-  const sourceWithTicker = toTickerTag(source);
+  const components = {
+    "md-embed": ({ ...props }) => {
+      const rawProps = props as Record<string, unknown>;
+      const type = typeof rawProps.type === "string" ? rawProps.type : "";
+      if (!type) {
+        return <p className="embed-error">Embed type is required.</p>;
+      }
+
+      const attrs: Record<string, string> = {};
+      for (const [key, value] of Object.entries(rawProps)) {
+        if (key === "type" || key === "node" || key === "children") {
+          continue;
+        }
+        if (typeof value === "string" && value.trim().length > 0) {
+          attrs[key] = value.trim();
+        }
+      }
+
+      return renderEmbed({ type, attrs });
+    },
+    img: ({ src, alt, title }: { src?: string; alt?: string; title?: string }) => {
+      const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
+      if (isVideoAsset(mapped)) {
+        return (
+          <video className="markdown-video" src={mapped} controls preload="metadata">
+            お使いのブラウザは動画再生に対応していません。
+          </video>
+        );
+      }
+
+      const meta = parseImageMeta(typeof title === "string" ? title : undefined);
+
+      const image = (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          className="markdown-image"
+          src={mapped}
+          alt={alt ?? ""}
+          loading="lazy"
+          style={{
+            transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
+            width: meta.width,
+            height: meta.height,
+            maxWidth: meta.maxWidth,
+          }}
+        />
+      );
+
+      if (meta.caption) {
+        return (
+          <figure className="markdown-figure">
+            {image}
+            <figcaption className="markdown-figcaption">{meta.caption}</figcaption>
+          </figure>
+        );
+      }
+
+      return image;
+    },
+    video: ({
+      src,
+      children,
+      ...props
+    }: {
+      src?: string;
+      children?: ReactNode;
+      controls?: boolean;
+      preload?: string;
+      muted?: boolean;
+      loop?: boolean;
+      autoPlay?: boolean;
+      playsInline?: boolean;
+      poster?: string;
+    }) => {
+      const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
+      return (
+        <video
+          className="markdown-video"
+          src={mapped || undefined}
+          controls={props.controls ?? true}
+          preload={props.preload ?? "metadata"}
+          muted={props.muted}
+          loop={props.loop}
+          autoPlay={props.autoPlay}
+          playsInline={props.playsInline}
+          poster={typeof props.poster === "string" ? mapAssetUrl(props.poster) : undefined}
+        >
+          {children}
+        </video>
+      );
+    },
+    source: ({ src, type }: { src?: string; type?: string }) => {
+      const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
+      return <source src={mapped || undefined} type={typeof type === "string" ? type : undefined} />;
+    },
+    a: ({ href, children }: { href?: string; children?: ReactNode }) => {
+      const safeHref = mapSafeHref(href);
+      if (!safeHref) {
+        return <>{children}</>;
+      }
+      const external = safeHref.startsWith("http://") || safeHref.startsWith("https://");
+      return (
+        <a
+          href={safeHref}
+          target={external ? "_blank" : undefined}
+          rel={external ? "noreferrer noopener" : undefined}
+        >
+          {children}
+        </a>
+      );
+    },
+  } as unknown as Components;
 
   return (
     <article className="markdown-body">
@@ -231,111 +271,9 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
         skipHtml={false}
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeKatex]}
-        components={{
-          div: ({ className, children }) => {
-            if (className?.includes("md-ticker")) {
-              const speedMatch = className.match(/\bspeed-([^\s]+)/);
-              const colorMatch = className.match(/\bcolor-(kw-(rainbow|white|accent)|hex-([0-9a-f]{3,8}))\b/i);
-              const durationSec = resolveTickerDuration(speedMatch?.[1]);
-              const text = flattenText(children).trim();
-              const colorToken = colorMatch?.[1]?.toLowerCase();
-              let color: string | undefined;
-              if (colorToken?.startsWith("kw-")) {
-                color = colorToken.replace(/^kw-/, "");
-              } else if (colorToken?.startsWith("hex-")) {
-                color = `#${colorToken.replace(/^hex-/, "")}`;
-              }
-              return (
-                <Ticker
-                  text={text}
-                  durationSec={durationSec}
-                  color={color}
-                  initialNowIso={new Date().toISOString()}
-                />
-              );
-            }
-            return <div className={className}>{children}</div>;
-          },
-          img: ({ src, alt, title }) => {
-            const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
-            if (isVideoAsset(mapped)) {
-              return (
-                <video className="markdown-video" src={mapped} controls preload="metadata">
-                  お使いのブラウザは動画再生に対応していません。
-                </video>
-              );
-            }
-
-            const meta = parseImageMeta(typeof title === "string" ? title : undefined);
-
-            const image = (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                className="markdown-image"
-                src={mapped}
-                alt={alt ?? ""}
-                loading="lazy"
-                style={{
-                  transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
-                  width: meta.width,
-                  height: meta.height,
-                  maxWidth: meta.maxWidth,
-                }}
-              />
-            );
-
-            if (meta.caption) {
-              return (
-                <figure className="markdown-figure">
-                  {image}
-                  <figcaption className="markdown-figcaption">{meta.caption}</figcaption>
-                </figure>
-              );
-            }
-
-            return image;
-          },
-          video: ({ src, children, ...props }) => {
-            const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
-            return (
-              <video
-                className="markdown-video"
-                src={mapped || undefined}
-                controls={props.controls ?? true}
-                preload={props.preload ?? "metadata"}
-                muted={props.muted}
-                loop={props.loop}
-                autoPlay={props.autoPlay}
-                playsInline={props.playsInline}
-                poster={typeof props.poster === "string" ? mapAssetUrl(props.poster) : undefined}
-              >
-                {children}
-              </video>
-            );
-          },
-          source: ({ src, type }) => {
-            const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
-            return <source src={mapped || undefined} type={typeof type === "string" ? type : undefined} />;
-          },
-          a: ({ href, children }) => {
-            const safeHref = mapSafeHref(href);
-            if (!safeHref) {
-              return <>{children}</>;
-            }
-            const external = safeHref.startsWith("http://") || safeHref.startsWith("https://");
-            return (
-              <a
-                href={safeHref}
-                target={external ? "_blank" : undefined}
-                rel={external ? "noreferrer noopener" : undefined}
-              >
-                {children}
-              </a>
-            );
-          },
-        }}
+        components={components}
       >
-        {sourceWithTicker}
+        {source}
       </ReactMarkdown>
     </article>
   );

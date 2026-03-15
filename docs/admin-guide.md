@@ -46,6 +46,7 @@
 - 設定ファイル: `content/site.json`
 - 変更できる項目:
   - `title`（ブログ名）
+  - `titleSegments`（ブログ名を分割し、各パーツの表示サイズを数値で指定。`1`が基準）
   - `description`（サイト説明）
   - `fontVariant`（フォントプリセット）
   - `blogLead`（`/blog` 一覧ページの見出し下テキスト）
@@ -55,7 +56,11 @@
 例:
 ```json
 {
-  "title": "My Research Blog",
+  "title": "My Research Blog 4th Edition",
+  "titleSegments": [
+    { "text": "My Research Blog", "size": 1 },
+    { "text": "4th Edition", "size": 0.78 }
+  ],
   "description": "ML experiments and notes",
   "blogLead": "日々のメモです",
   "blogTechLead": "技術記事の一覧です",
@@ -72,7 +77,7 @@
 - インライン数式は `$ ... $` で記述できます。
 - HTMLタグは安全のため一部のみ許可しています（`details` / `summary` など）。
 - ローカル動画は `mp4` / `webm` に対応しています。
-- 横スクロールの虹色ティッカーは専用記法 `:::ticker ... :::` で使えます。
+- 横スクロールの虹色ティッカーは埋め込みタグ `<md-embed ...>` で使えます。
 
 `details` / `summary` の例:
 ```md
@@ -98,7 +103,7 @@
 
 ticker例:
 ```md
-:::ticker text="WELCOME TO MY BLOG" speed=0.08 color=rainbow:::
+<md-embed type="ticker" text="WELCOME TO MY BLOG" speed="0.08" color="rainbow"></md-embed>
 ```
 
 - `speed`: 1秒あたりの往復回数（回/秒）
@@ -110,11 +115,18 @@ ticker例:
   - 例: `color=white`
   - 例: `color=#7dd3fc`
 - `direction` 指定は不要です（現在は使いません）。
-- 互換のため `slow` / `normal` / `fast` も引き続き使えます。
+- `speed` は `slow` / `normal` / `fast` も使えます。
+- 新しい埋め込み記法は `<md-embed ...>` です。
+  - 例: 最新記事 `<md-embed type="latestPosts" source="all" count="5"></md-embed>`
+
+### 埋め込み（embed）の拡張ルール
+- 記事側は `<md-embed type="<name>" ...></md-embed>` を追加するだけで使えます。
+- 新しい埋め込み機能は、`src/components/embeds/embed-registry.tsx` に `type` を追加して実装します。
+- `type` が不明な場合はページ全体を壊さず、埋め込みエラー表示にフォールバックします。
 
 カウントダウン例:
 ```md
-:::ticker text="伊吹風子の誕生日まであと {{countdown:12-24}} 日" speed=0.1:::
+<md-embed type="ticker" text="伊吹風子の誕生日まであと {{countdown:12-24}} 日" speed="0.1"></md-embed>
 ```
 
 - `{{countdown:MM-DD}}` は次のその日付までの日数に置換されます。

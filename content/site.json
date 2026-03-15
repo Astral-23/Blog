@@ -1,5 +1,9 @@
 {
-  "title": "Hutaro Blog",
+  "title": "Hutaro Blog 4th Edition",
+  "titleSegments": [
+    { "text": "Hutaro Blog", "size": 1 },
+    { "text": "4th Edition", "size": 0.78 }
+  ],
   "description": "Markdown driven blog",
   "fontVariant": "classic",
   "blogLead": "✩ゆるふわ日常系コメディ✩",
