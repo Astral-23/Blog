@@ -7,16 +7,43 @@ type TickerProps = {
   color?: string;
 };
 
-function calculateDaysUntil(month: number, day: number): number {
-  const now = new Date();
-  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+const COUNTDOWN_TIME_ZONE = "Asia/Tokyo";
 
-  let target = new Date(today.getFullYear(), month - 1, day);
-  if (target < today) {
-    target = new Date(today.getFullYear() + 1, month - 1, day);
+function getYmdInTimeZone(date: Date, timeZone: string): { year: number; month: number; day: number } {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(date);
+
+  const year = Number.parseInt(parts.find((part) => part.type === "year")?.value ?? "", 10);
+  const month = Number.parseInt(parts.find((part) => part.type === "month")?.value ?? "", 10);
+  const day = Number.parseInt(parts.find((part) => part.type === "day")?.value ?? "", 10);
+
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+    const fallback = new Date();
+    return {
+      year: fallback.getUTCFullYear(),
+      month: fallback.getUTCMonth() + 1,
+      day: fallback.getUTCDate(),
+    };
   }
 
-  const diffMs = target.getTime() - today.getTime();
+  return { year, month, day };
+}
+
+function calculateDaysUntil(month: number, day: number): number {
+  const today = getYmdInTimeZone(new Date(), COUNTDOWN_TIME_ZONE);
+  const currentDayUtc = Date.UTC(today.year, today.month - 1, today.day);
+
+  let targetYear = today.year;
+  if (month < today.month || (month === today.month && day < today.day)) {
+    targetYear += 1;
+  }
+
+  const targetDayUtc = Date.UTC(targetYear, month - 1, day);
+  const diffMs = targetDayUtc - currentDayUtc;
   return Math.floor(diffMs / (24 * 60 * 60 * 1000));
 }
 
