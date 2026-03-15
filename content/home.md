@@ -12,7 +12,7 @@
 ## 最新の記事
 ---
 
-<md-embed type="latestPosts" source="all" count="2"></md-embed>
+<md-embed type="latestPosts" source="all" count="1"></md-embed>
 
 
 <br>

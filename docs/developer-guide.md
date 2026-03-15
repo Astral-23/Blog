@@ -72,10 +72,19 @@ MNIST系デモを追加する場合の推奨分割:
 ## 8. 開発ワークフロー
 1. `npm install`
 2. `npm run dev` でローカル確認
-3. 変更実装
-4. `npm run lint`
-5. `npm run build`
-6. 問題なければ `npm run publish:secure`
+3. 変更対象のテストを先に追加（Red）
+4. 実装してテストを通す（Green）
+5. 必要なリファクタを行い、テストを維持（Refactor）
+6. `npm run lint`
+7. `npm run test`
+8. `npm run e2e`
+9. `npm run build`
+10. 問題なければ `npm run publish:secure`
+
+TDD運用ルール:
+- 壊れやすい重要ロジック（データ変換・並び替え・境界値・サニタイズ）はTDDを必須とする。
+- 単純な文言変更やレイアウト微調整は、実装後に回帰テスト追加でも可。
+- 判断に迷う場合は「先にテストを書く」を選ぶ。
 
 テーマ比較:
 - `npm run dev:minimal`

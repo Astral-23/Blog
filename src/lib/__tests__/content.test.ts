@@ -50,9 +50,9 @@ describe("content library", () => {
     vi.mocked(execFileSync).mockImplementation((_, args) => {
       const target = String(args?.[args.length - 1] ?? "");
       if (target.endsWith("first.md")) {
-        return "2026-01-10T00:00:00.000Z\\n2026-01-01T00:00:00.000Z";
+        return "2026-01-10T00:00:00.000Z\n2026-01-01T00:00:00.000Z";
       }
-      return "2026-02-10T00:00:00.000Z\\n2026-02-01T00:00:00.000Z";
+      return "2026-02-10T00:00:00.000Z\n2026-02-01T00:00:00.000Z";
     });
 
     const posts = getPostsBySection("blog");
@@ -62,6 +62,35 @@ describe("content library", () => {
     expect(posts[0].title).toBe("Derived Title");
     expect(posts[1].title).toBe("Custom Title");
     expect(posts[1].excerpt).toBe("Custom Summary");
+  });
+
+  it("sorts by publishedAt using absolute time, not string order", () => {
+    vi.mocked(fs.existsSync).mockImplementation((path) =>
+      String(path).includes("content/blog"),
+    );
+    vi.mocked(fs.readdirSync).mockReturnValue(["a.md", "b.md"] as unknown as string[]);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
+      const p = String(path);
+      if (p.endsWith("a.md")) {
+        return "# post-a";
+      }
+      return "# post-b";
+    });
+    vi.mocked(execFileSync).mockImplementation((_, args) => {
+      const target = String(args?.[args.length - 1] ?? "");
+      if (target.endsWith("a.md")) {
+        // 2026-03-15T15:10:00Z
+        return "2026-03-16T00:10:00+09:00";
+      }
+      // 2026-03-15T23:50:00Z (newer than post-a despite earlier calendar date text)
+      return "2026-03-15T23:50:00+00:00";
+    });
+
+    const posts = getPostsBySection("blog");
+
+    expect(posts).toHaveLength(2);
+    expect(posts[0].slug).toBe("b");
+    expect(posts[1].slug).toBe("a");
   });
 
   it("falls back to file timestamps when git history is unavailable", () => {

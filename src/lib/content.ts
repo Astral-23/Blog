@@ -116,6 +116,11 @@ function listMarkdownFiles(directory: string): string[] {
     .map((name) => path.join(directory, name));
 }
 
+function toTimeMs(value: string): number {
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 export function getHomeMarkdown(): string {
   const homePath = path.join(CONTENT_ROOT, "home.md");
   if (!fs.existsSync(homePath)) {
@@ -130,7 +135,7 @@ export function getPostsBySection(section: Section): Post[] {
 
   return files
     .map((filePath) => makePost(filePath, section))
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+    .sort((a, b) => toTimeMs(b.publishedAt) - toTimeMs(a.publishedAt));
 }
 
 export function getPostBySlug(section: Section, slug: string): Post | null {
