@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { MarkdownContent } from "@/components/markdown-content";
 import { getPostBySlug, getPostsBySection } from "@/lib/content";
+import { formatDisplayDate } from "@/lib/date";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -21,8 +22,8 @@ export default async function TechPostPage({ params }: PageProps) {
   return (
     <section className="page-wrap">
       <div className="post-meta">
-        <p>Published: {new Date(post.publishedAt).toLocaleDateString("ja-JP")}</p>
-        <p>Updated: {new Date(post.updatedAt).toLocaleDateString("ja-JP")}</p>
+        <p>Published: {formatDisplayDate(post.publishedAt)}</p>
+        <p>Updated: {formatDisplayDate(post.updatedAt)}</p>
       </div>
       <MarkdownContent source={post.content} />
     </section>

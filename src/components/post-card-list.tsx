@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Post } from "@/lib/content";
+import { formatDisplayDate } from "@/lib/date";
 
 type PostCardListProps = {
   posts: Post[];
@@ -11,7 +12,7 @@ export function PostCardList({ posts }: PostCardListProps) {
       {posts.map((post) => (
         <li className="post-card" key={`${post.section}-${post.slug}`}>
           <Link className="post-card-link" href={`/${post.section}/${post.slug}`}>
-            <p className="post-date">{new Date(post.publishedAt).toLocaleDateString("ja-JP")}</p>
+            <p className="post-date">{formatDisplayDate(post.publishedAt)}</p>
             <h2>{post.title}</h2>
             {post.excerpt ? <p>{post.excerpt}</p> : null}
           </Link>
