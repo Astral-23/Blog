@@ -68,6 +68,7 @@
 - インライン数式は `$ ... $` で記述できます。
 - HTMLタグは安全のため一部のみ許可しています（`details` / `summary` など）。
 - ローカル動画は `mp4` / `webm` に対応しています。
+- 横スクロールの虹色ティッカーは専用記法 `:::ticker ... :::` で使えます。
 
 `details` / `summary` の例:
 ```md
@@ -90,6 +91,29 @@
   <source src="assets/demo.mp4" type="video/mp4" />
 </video>
 ```
+
+ticker例:
+```md
+:::ticker text="WELCOME TO MY BLOG" speed=0.08 color=rainbow:::
+```
+
+- `speed`: 1秒あたりの往復回数（回/秒）
+  - `0.05` = 20秒で1往復（かなりゆっくり）
+  - `0.1` = 10秒で1往復（標準）
+  - `0.2` = 5秒で1往復（速い）
+- `speed=0` は移動なし（位置固定、発光のみ）
+- `color`: `rainbow` / `white` / `accent` / `#hex`
+  - 例: `color=white`
+  - 例: `color=#7dd3fc`
+- `direction` 指定は不要です（現在は使いません）。
+- 互換のため `slow` / `normal` / `fast` も引き続き使えます。
+
+カウントダウン例:
+```md
+:::ticker text="伊吹風子の誕生日まであと {{countdown:12-24}} 日" speed=0.1:::
+```
+
+- `{{countdown:MM-DD}}` は次のその日付までの日数に置換されます。
 
 ## 7. 一覧用サマリー（要約）を手動で指定する
 - 記事冒頭にFrontmatterを追加し、`summary` を書くと一覧の説明文を上書きできます。

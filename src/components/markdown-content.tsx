@@ -1,9 +1,11 @@
 import ReactMarkdown from "react-markdown";
+import type { ReactNode } from "react";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import { Ticker } from "@/components/ticker";
 
 type MarkdownContentProps = {
   source: string;
@@ -24,7 +26,11 @@ const sanitizeSchema = {
     ...(defaultSchema.attributes ?? {}),
     code: [...((defaultSchema.attributes?.code as unknown[]) ?? []), ["className", /^language-./], "className"],
     span: [...((defaultSchema.attributes?.span as unknown[]) ?? []), "className"],
-    div: [...((defaultSchema.attributes?.div as unknown[]) ?? []), "className"],
+    div: [
+      ...((defaultSchema.attributes?.div as unknown[]) ?? []),
+      "className",
+      "data-color",
+    ],
     a: [...((defaultSchema.attributes?.a as unknown[]) ?? []), "target", "rel"],
     video: [
       ...((defaultSchema.attributes?.video as unknown[]) ?? []),
@@ -142,13 +148,107 @@ function mapSafeHref(href?: string): string | undefined {
   return href;
 }
 
+function parseTickerAttributes(input: string): Record<string, string> {
+  const attrs: Record<string, string> = {};
+  const attrPattern = /(\w+)=("([^"]*)"|([^\s]+))/g;
+  let match: RegExpExecArray | null;
+  while ((match = attrPattern.exec(input)) !== null) {
+    const key = match[1].toLowerCase();
+    const value = (match[3] ?? match[4] ?? "").trim();
+    attrs[key] = value;
+  }
+  return attrs;
+}
+
+function toTickerTag(raw: string): string {
+  const pattern = /:::ticker\s+([\s\S]+?):::/g;
+  return raw.replace(pattern, (_, attrText: string) => {
+    const attrs = parseTickerAttributes(attrText);
+    const text = attrs.text ?? "";
+    const speed = attrs.speed ?? "0.08";
+    const color = attrs.color ?? "rainbow";
+    const escapedText = text
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+    const escapedColor = color
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;");
+    const rawColor = escapedColor.replace(/^#/, "").toLowerCase();
+    const colorToken =
+      rawColor === "rainbow" || rawColor === "white" || rawColor === "accent"
+        ? `kw-${rawColor}`
+        : `hex-${rawColor.replace(/[^0-9a-f]/g, "")}`;
+    return `<div class="md-ticker speed-${speed} color-${colorToken}">${escapedText}</div>`;
+  });
+}
+
+function resolveTickerDuration(value: unknown): number | null {
+  if (value === "slow") {
+    return 12;
+  }
+  if (value === "fast") {
+    return 3;
+  }
+  if (value === "normal") {
+    return 6;
+  }
+  if (typeof value === "string") {
+    const roundTripsPerSec = Number.parseFloat(value);
+    if (!Number.isNaN(roundTripsPerSec) && roundTripsPerSec > 0) {
+      const halfTripDuration = 1 / (2 * roundTripsPerSec);
+      return Math.max(0.25, Math.min(60, halfTripDuration));
+    }
+    if (!Number.isNaN(roundTripsPerSec) && roundTripsPerSec <= 0) {
+      return null;
+    }
+  }
+  return 6;
+}
+
+function flattenText(node: ReactNode): string {
+  if (typeof node === "string") {
+    return node;
+  }
+  if (typeof node === "number") {
+    return String(node);
+  }
+  if (Array.isArray(node)) {
+    return node.map((part) => flattenText(part)).join("");
+  }
+  return "";
+}
+
 export function MarkdownContent({ source }: MarkdownContentProps) {
+  const sourceWithTicker = toTickerTag(source);
+
   return (
     <article className="markdown-body">
       <ReactMarkdown
+        skipHtml={false}
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeKatex]}
         components={{
+          div: ({ className, children }) => {
+            if (className?.includes("md-ticker")) {
+              const speedMatch = className.match(/\bspeed-([^\s]+)/);
+              const colorMatch = className.match(/\bcolor-(kw-(rainbow|white|accent)|hex-([0-9a-f]{3,8}))\b/i);
+              const durationSec = resolveTickerDuration(speedMatch?.[1]);
+              const text = flattenText(children).trim();
+              const colorToken = colorMatch?.[1]?.toLowerCase();
+              let color: string | undefined;
+              if (colorToken?.startsWith("kw-")) {
+                color = colorToken.replace(/^kw-/, "");
+              } else if (colorToken?.startsWith("hex-")) {
+                color = `#${colorToken.replace(/^hex-/, "")}`;
+              }
+              return <Ticker text={text} durationSec={durationSec} color={color} />;
+            }
+            return <div className={className}>{children}</div>;
+          },
           img: ({ src, alt, title }) => {
             const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
             if (isVideoAsset(mapped)) {
@@ -228,7 +328,7 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
           },
         }}
       >
-        {source}
+        {sourceWithTicker}
       </ReactMarkdown>
     </article>
   );
