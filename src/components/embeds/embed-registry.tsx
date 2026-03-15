@@ -47,11 +47,22 @@ function resolveTickerDuration(value: string | undefined): number | null {
   return 6;
 }
 
+function toTimeMs(value: string): number {
+  const parsed = new Date(value).getTime();
+  return Number.isNaN(parsed) ? 0 : parsed;
+}
+
 function loadLatestPosts(source: Section | "all", count: number): Post[] {
   const sections: Section[] = source === "all" ? ["blog", "blog-tech"] : [source];
   return sections
     .flatMap((section) => getPostsBySection(section))
-    .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))
+    .sort((a, b) => {
+      const publishedDiff = toTimeMs(b.publishedAt) - toTimeMs(a.publishedAt);
+      if (publishedDiff !== 0) {
+        return publishedDiff;
+      }
+      return toTimeMs(b.updatedAt) - toTimeMs(a.updatedAt);
+    })
     .slice(0, count);
 }
 

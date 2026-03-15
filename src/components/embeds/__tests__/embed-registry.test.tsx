@@ -28,15 +28,27 @@ describe("renderEmbed", () => {
     vi.clearAllMocks();
   });
 
-  it("renders latest posts sorted across sections", () => {
+  it("renders latest posts sorted by publishedAt across sections", () => {
     vi.mocked(getPostsBySection).mockImplementation((section) => {
       if (section === "blog") {
         return [
-          post({ slug: "a", title: "blog-a", section: "blog", publishedAt: "2026-01-01T00:00:00.000Z" }),
+          post({
+            slug: "a",
+            title: "blog-a",
+            section: "blog",
+            publishedAt: "2026-01-01T00:00:00.000Z",
+            updatedAt: "2026-01-01T00:00:00.000Z",
+          }),
         ];
       }
       return [
-        post({ slug: "b", title: "tech-b", section: "blog-tech", publishedAt: "2026-02-01T00:00:00.000Z" }),
+        post({
+          slug: "b",
+          title: "tech-b",
+          section: "blog-tech",
+          publishedAt: "2025-12-01T00:00:00.000Z",
+          updatedAt: "2026-02-01T00:00:00.000Z",
+        }),
       ];
     });
 
@@ -44,10 +56,42 @@ describe("renderEmbed", () => {
 
     const links = screen.getAllByRole("link");
     expect(links).toHaveLength(2);
-    expect(links[0]).toHaveTextContent("tech-b");
-    expect(links[0]).toHaveAttribute("href", "/blog-tech/b");
-    expect(links[1]).toHaveTextContent("blog-a");
-    expect(links[1]).toHaveAttribute("href", "/blog/a");
+    expect(links[0]).toHaveTextContent("blog-a");
+    expect(links[0]).toHaveAttribute("href", "/blog/a");
+    expect(links[1]).toHaveTextContent("tech-b");
+    expect(links[1]).toHaveAttribute("href", "/blog-tech/b");
+  });
+
+  it("returns only the most recently updated post when count is 1", () => {
+    vi.mocked(getPostsBySection).mockImplementation((section) => {
+      if (section === "blog") {
+        return [
+          post({
+            slug: "new",
+            title: "new-post",
+            section: "blog",
+            publishedAt: "2026-03-01T00:00:00.000Z",
+            updatedAt: "2026-02-01T00:00:00.000Z",
+          }),
+        ];
+      }
+      return [
+        post({
+          slug: "old",
+          title: "old-post",
+          section: "blog-tech",
+          publishedAt: "2025-01-01T00:00:00.000Z",
+          updatedAt: "2026-05-01T00:00:00.000Z",
+        }),
+      ];
+    });
+
+    render(<>{renderEmbed({ type: "latestPosts", attrs: { source: "all", count: "1" } })}</>);
+
+    const links = screen.getAllByRole("link");
+    expect(links).toHaveLength(1);
+    expect(links[0]).toHaveTextContent("new-post");
+    expect(links[0]).toHaveAttribute("href", "/blog/new");
   });
 
   it("falls back to unknown embed error", () => {
