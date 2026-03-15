@@ -37,8 +37,9 @@ export default function RootLayout({
   const settings = getSiteSettings();
 
   return (
-    <html lang="ja">
+    <html lang="ja" suppressHydrationWarning>
       <body
+        suppressHydrationWarning
         className={`${notoSans.variable} ${notoSerif.variable} ${zenKaku.variable}`}
         data-theme={THEME_VARIANT}
         data-font={settings.fontVariant}

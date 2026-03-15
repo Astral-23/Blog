@@ -245,7 +245,14 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
               } else if (colorToken?.startsWith("hex-")) {
                 color = `#${colorToken.replace(/^hex-/, "")}`;
               }
-              return <Ticker text={text} durationSec={durationSec} color={color} />;
+              return (
+                <Ticker
+                  text={text}
+                  durationSec={durationSec}
+                  color={color}
+                  initialNowIso={new Date().toISOString()}
+                />
+              );
             }
             return <div className={className}>{children}</div>;
           },
