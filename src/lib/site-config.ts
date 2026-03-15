@@ -19,6 +19,8 @@ type SiteSettings = {
   description: string;
   navigation: NavItem[];
   fontVariant: FontVariant;
+  blogLead: string;
+  blogTechLead: string;
 };
 
 const DEFAULT_SETTINGS: SiteSettings = {
@@ -30,6 +32,8 @@ const DEFAULT_SETTINGS: SiteSettings = {
     { href: "/blog-tech", label: "blog-tech" },
   ],
   fontVariant: "classic",
+  blogLead: "",
+  blogTechLead: "",
 };
 
 const SETTINGS_PATH = path.join(process.cwd(), "content", "site.json");
@@ -82,6 +86,10 @@ export function getSiteSettings(): SiteSettings {
       description,
       navigation: navigation.length > 0 ? navigation : DEFAULT_SETTINGS.navigation,
       fontVariant: resolveFontVariant(parsed.fontVariant),
+      blogLead:
+        typeof parsed.blogLead === "string" ? parsed.blogLead : DEFAULT_SETTINGS.blogLead,
+      blogTechLead:
+        typeof parsed.blogTechLead === "string" ? parsed.blogTechLead : DEFAULT_SETTINGS.blogTechLead,
     };
   } catch {
     return DEFAULT_SETTINGS;

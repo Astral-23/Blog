@@ -175,6 +175,12 @@ a {
   font-weight: var(--font-heading-weight);
 }
 
+.page-lead {
+  margin: -0.35rem 0 1.2rem;
+  color: var(--muted);
+  font-size: 1rem;
+}
+
 .post-list {
   list-style: none;
   margin: 0;

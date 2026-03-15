@@ -1,12 +1,15 @@
 import Link from "next/link";
 import { getPostsBySection } from "@/lib/content";
+import { getSiteSettings } from "@/lib/site-config";
 
 export default function TechListPage() {
   const posts = getPostsBySection("blog-tech");
+  const settings = getSiteSettings();
 
   return (
     <section className="page-wrap">
       <h1 className="page-title">blog-tech</h1>
+      {settings.blogTechLead ? <p className="page-lead">{settings.blogTechLead}</p> : null}
       <ul className="post-list">
         {posts.map((post) => (
           <li className="post-card" key={post.slug}>

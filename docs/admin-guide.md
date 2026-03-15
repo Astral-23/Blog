@@ -48,6 +48,8 @@
   - `title`（ブログ名）
   - `description`（サイト説明）
   - `fontVariant`（フォントプリセット）
+  - `blogLead`（`/blog` 一覧ページの見出し下テキスト）
+  - `blogTechLead`（`/blog-tech` 一覧ページの見出し下テキスト）
   - `navigation`（上部ナビ表示）
 
 例:
@@ -55,6 +57,8 @@
 {
   "title": "My Research Blog",
   "description": "ML experiments and notes",
+  "blogLead": "日々のメモです",
+  "blogTechLead": "技術記事の一覧です",
   "navigation": [
     { "href": "/", "label": "home" },
     { "href": "/blog", "label": "blog" },

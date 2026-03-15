@@ -2,6 +2,8 @@
   "title": "Hutaro Blog",
   "description": "Markdown driven blog",
   "fontVariant": "classic",
+  "blogLead": "✩ゆるふわ日常系コメディ✩",
+  "blogTechLead": "工学部...つまり爆弾が作れるってことか？",
   "navigation": [
     { "href": "/", "label": "home" },
     { "href": "/blog", "label": "blog" },
