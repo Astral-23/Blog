@@ -33,6 +33,15 @@
 4. 記事から `![alt](assets/xxx.png)` や `![video](assets/sample.mp4)` で参照
 5. `npm run publish:secure` を実行
 
+画像キャプション/回転の例:
+```md
+![MNIST入力画像](assets/mnist.png "caption=手書き入力のサンプル; rotate=90")
+```
+
+- `caption=...` で画像下にキャプション表示
+- `rotate=90` のように角度指定で回転
+- `width=640` や `maxwidth=80%` で表示サイズ指定
+
 ## 5. サイト名・説明・ナビの変更
 - 設定ファイル: `content/site.json`
 - 変更できる項目:
@@ -116,3 +125,18 @@ summary: "この記事の短い説明文をここに書く"
 - `publishedAt`: Git初回コミット日時
 - `updatedAt`: Git最終コミット日時
 - Git未設定時のみファイル時刻を使用します。
+
+## 10. 画像サイズの目安と最適化
+- 目安:
+  - ヒーロー画像: 横 1600〜1920px
+  - 記事中画像: 横 800〜1280px
+  - サムネイル用途: 横 600〜800px
+- 表示サイズだけ変える例:
+```md
+![図1](assets/figure.png "caption=比較図; width=720")
+```
+- 実ファイルを軽量化するコマンド:
+  - 全体最適化（推奨）: `npm run assets:optimize`
+  - 事前確認（dry-run）: `npm run assets:optimize:dry`
+  - 単体リサイズ例:
+    `npm run assets:resize -- --file content/assets/figure.png --width 1200`

@@ -243,6 +243,21 @@ a {
   margin: 1rem 0;
 }
 
+.markdown-figure {
+  margin: 1rem 0;
+}
+
+.markdown-image {
+  transform-origin: center center;
+}
+
+.markdown-figcaption {
+  margin-top: 0.5rem;
+  color: var(--muted);
+  font-size: 0.92rem;
+  text-align: center;
+}
+
 .markdown-video {
   width: 100%;
   max-width: 100%;

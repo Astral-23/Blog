@@ -21,3 +21,9 @@ npm run dev
 ```bash
 npm run publish:secure
 ```
+
+画像最適化:
+
+```bash
+npm run assets:optimize
+```

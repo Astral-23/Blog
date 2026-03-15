@@ -13,7 +13,10 @@
     "dev:magazine": "THEME_VARIANT=magazine npm run dev",
     "preview": "npm run build && npm run start",
     "security": "npm audit --audit-level=high",
-    "publish:secure": "npm run lint && npm run build && npm run security"
+    "publish:secure": "npm run lint && npm run build && npm run security",
+    "assets:optimize": "node scripts/optimize-assets.mjs",
+    "assets:optimize:dry": "node scripts/optimize-assets.mjs --dry-run",
+    "assets:resize": "node scripts/optimize-assets.mjs"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
@@ -25,7 +28,8 @@
     "rehype-raw": "^7.0.0",
     "rehype-sanitize": "^6.0.0",
     "remark-gfm": "^4.0.1",
-    "remark-math": "^6.0.0"
+    "remark-math": "^6.0.0",
+    "sharp": "^0.34.5"
   },
   "devDependencies": {
     "@types/node": "^20",

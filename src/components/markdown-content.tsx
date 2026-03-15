@@ -9,6 +9,14 @@ type MarkdownContentProps = {
   source: string;
 };
 
+type ImageMeta = {
+  caption?: string;
+  rotateDeg?: number;
+  width?: string;
+  height?: string;
+  maxWidth?: string;
+};
+
 const sanitizeSchema = {
   ...defaultSchema,
   tagNames: [...(defaultSchema.tagNames ?? []), "details", "summary", "video", "source"],
@@ -57,6 +65,66 @@ function isVideoAsset(url: string): boolean {
   return /\.(mp4|webm)$/i.test(url);
 }
 
+function parseImageMeta(title?: string): ImageMeta {
+  if (!title) {
+    return {};
+  }
+
+  const meta: ImageMeta = {};
+  const tokens = title
+    .split(";")
+    .map((token) => token.trim())
+    .filter(Boolean);
+
+  for (const token of tokens) {
+    const [rawKey, ...rest] = token.split("=");
+    const key = rawKey?.trim().toLowerCase();
+    const value = rest.join("=").trim();
+
+    if (key === "rotate") {
+      const deg = Number.parseFloat(value);
+      if (!Number.isNaN(deg)) {
+        meta.rotateDeg = deg;
+      }
+      continue;
+    }
+
+    if (key === "caption") {
+      if (value) {
+        meta.caption = value;
+      }
+      continue;
+    }
+
+    if (key === "width") {
+      if (value) {
+        meta.width = /^\d+$/.test(value) ? `${value}px` : value;
+      }
+      continue;
+    }
+
+    if (key === "height") {
+      if (value) {
+        meta.height = /^\d+$/.test(value) ? `${value}px` : value;
+      }
+      continue;
+    }
+
+    if (key === "maxwidth" || key === "max-width") {
+      if (value) {
+        meta.maxWidth = /^\d+$/.test(value) ? `${value}px` : value;
+      }
+      continue;
+    }
+
+    if (!meta.caption) {
+      meta.caption = token;
+    }
+  }
+
+  return meta;
+}
+
 function mapSafeHref(href?: string): string | undefined {
   if (!href) {
     return undefined;
@@ -81,7 +149,7 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
         remarkPlugins={[remarkGfm, remarkMath]}
         rehypePlugins={[rehypeRaw, [rehypeSanitize, sanitizeSchema], rehypeKatex]}
         components={{
-          img: ({ src, alt }) => {
+          img: ({ src, alt, title }) => {
             const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
             if (isVideoAsset(mapped)) {
               return (
@@ -90,8 +158,35 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
                 </video>
               );
             }
-            // eslint-disable-next-line @next/next/no-img-element
-            return <img src={mapped} alt={alt ?? ""} loading="lazy" />;
+
+            const meta = parseImageMeta(typeof title === "string" ? title : undefined);
+
+            const image = (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                className="markdown-image"
+                src={mapped}
+                alt={alt ?? ""}
+                loading="lazy"
+                style={{
+                  transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
+                  width: meta.width,
+                  height: meta.height,
+                  maxWidth: meta.maxWidth,
+                }}
+              />
+            );
+
+            if (meta.caption) {
+              return (
+                <figure className="markdown-figure">
+                  {image}
+                  <figcaption className="markdown-figcaption">{meta.caption}</figcaption>
+                </figure>
+              );
+            }
+
+            return image;
           },
           video: ({ src, children, ...props }) => {
             const mapped = mapAssetUrl(typeof src === "string" ? src : undefined);
