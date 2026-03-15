@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { CSSProperties } from "react";
+import { DISPLAY_TIME_ZONE, getYmdInTimeZone } from "@/lib/time";
 
 type TickerProps = {
   text: string;
@@ -9,34 +10,8 @@ type TickerProps = {
   initialNowIso?: string;
 };
 
-const COUNTDOWN_TIME_ZONE = "Asia/Tokyo";
-
-function getYmdInTimeZone(date: Date, timeZone: string): { year: number; month: number; day: number } {
-  const parts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).formatToParts(date);
-
-  const year = Number.parseInt(parts.find((part) => part.type === "year")?.value ?? "", 10);
-  const month = Number.parseInt(parts.find((part) => part.type === "month")?.value ?? "", 10);
-  const day = Number.parseInt(parts.find((part) => part.type === "day")?.value ?? "", 10);
-
-  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
-    const fallback = new Date();
-    return {
-      year: fallback.getUTCFullYear(),
-      month: fallback.getUTCMonth() + 1,
-      day: fallback.getUTCDate(),
-    };
-  }
-
-  return { year, month, day };
-}
-
 function calculateDaysUntil(month: number, day: number, now: Date): number {
-  const today = getYmdInTimeZone(now, COUNTDOWN_TIME_ZONE);
+  const today = getYmdInTimeZone(now, DISPLAY_TIME_ZONE);
   const currentDayUtc = Date.UTC(today.year, today.month - 1, today.day);
 
   let targetYear = today.year;

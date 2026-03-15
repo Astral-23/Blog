@@ -41,6 +41,7 @@
 - `publishedAt`: Git初回コミット日時
 - `updatedAt`: Git最終コミット日時
 - Git履歴なし環境のみファイル時刻へフォールバック
+- `.meta` 日時メモは記事読み込み時に生成されるため、公開前に `npm run preview` または `npm run build` を最低1回実行する
 
 実装ルール:
 - 日付生成ロジックは `src/lib/content.ts` 以外に分散させない。

@@ -3,6 +3,7 @@ import { Ticker } from "@/components/ticker";
 import { getPostsBySection, type Post, type Section } from "@/lib/content";
 import { PostCardList } from "@/components/post-card-list";
 import type { EmbedPayload } from "@/lib/embeds/types";
+import { compareIsoDesc } from "@/lib/time";
 
 type EmbedRenderer = (attrs: Record<string, string>) => ReactNode;
 
@@ -47,21 +48,16 @@ function resolveTickerDuration(value: string | undefined): number | null {
   return 6;
 }
 
-function toTimeMs(value: string): number {
-  const parsed = new Date(value).getTime();
-  return Number.isNaN(parsed) ? 0 : parsed;
-}
-
 function loadLatestPosts(source: Section | "all", count: number): Post[] {
   const sections: Section[] = source === "all" ? ["blog", "blog-tech"] : [source];
   return sections
     .flatMap((section) => getPostsBySection(section))
     .sort((a, b) => {
-      const publishedDiff = toTimeMs(b.publishedAt) - toTimeMs(a.publishedAt);
+      const publishedDiff = compareIsoDesc(a.publishedAt, b.publishedAt);
       if (publishedDiff !== 0) {
         return publishedDiff;
       }
-      return toTimeMs(b.updatedAt) - toTimeMs(a.updatedAt);
+      return compareIsoDesc(a.updatedAt, b.updatedAt);
     })
     .slice(0, count);
 }

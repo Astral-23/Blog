@@ -9,11 +9,12 @@
 公開前チェックを実行してください。
 
 要件:
-1. `npm run publish:secure` を実行
-2. セキュリティ観点でコードレビューを実施（最低限: XSS、パストラバーサル、危険な外部リンク）
-3. 問題があれば修正まで実施
-4. 修正後に再度 `npm run publish:secure` を実行
-5. 最後に以下の形式で報告
+1. `npm run preview` を先に実行（`.meta` の日時ファイル生成のため）
+2. `npm run publish:secure` を実行
+3. セキュリティ観点でコードレビューを実施（最低限: XSS、パストラバーサル、危険な外部リンク）
+4. 問題があれば修正まで実施
+5. 修正後に再度 `npm run publish:secure` を実行
+6. 最後に以下の形式で報告
    - 結果: PASS / FAIL
    - Findings: 重要度順（High/Medium/Low）
    - 変更ファイル一覧
@@ -21,6 +22,7 @@
 ```
 
 ## このテンプレートが実行するコマンド
+- `npm run preview`（`.meta/published-at.json` / `.meta/updated-at.json` 生成）
 - `npm run lint`
 - `npm run build`
 - `npm run security` (`npm audit --audit-level=high`)

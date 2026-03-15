@@ -17,6 +17,11 @@
 
 `npm run preview` は `build -> start` をまとめて実行します。
 
+重要:
+- `content/.meta/published-at.json` と `content/.meta/updated-at.json` は、記事読み込み時に生成/更新されます。
+- そのため、記事追加後に `git push` する前に、少なくとも一度 `npm run preview`（または `npm run build`）を実行してください。
+- これを行わないと、時間メモファイルが作られないまま公開作業に進む可能性があります。
+
 ## 3. 公開前チェックとは？
 - コマンド: `npm run publish:secure`
 - 中身:
@@ -31,7 +36,8 @@
 2. 記事を `content/blog/` または `content/blog-tech/` に追加
 3. 画像/動画を `content/assets/` に置く
 4. 記事から `![alt](assets/xxx.png)` や `![video](assets/sample.mp4)` で参照
-5. `npm run publish:secure` を実行
+5. `npm run preview`（または `npm run build`）を1回実行して `.meta` 日時ファイルを生成
+6. `npm run publish:secure` を実行
 
 画像キャプション/回転の例:
 ```md
