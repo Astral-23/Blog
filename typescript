@@ -1,0 +1,938 @@
+Script started on Mon Mar 16 22:44:29 2026
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hccd script[?2004l
+cd: no such file or directory: script
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hlls[?2004l
+audit-reports		package.json
+content			playwright.config.ts
+docs			public
+e2e			README.md
+env.production.example	scripts
+eslint.config.mjs	src
+next-env.d.ts		test-results
+next.config.mjs		tsconfig.json
+node_modules		typescript
+ops			vitest.config.ts
+package-lock.json
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hccd scripts[1m/[0m[0m [?2004l
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog/scripts [K[?2004hddeploy    d  ../deploy-prod.sh[1m [0m[0m [?2004l
+[deploy-prod] target: deploy@133.88.121.12
+./deploy-prod.sh: line 12: ./scripts/deploy.sh: No such file or directory
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog/scripts [K[?2004hcc  ccd ..[?2004l
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004h/ ssrs script[1m [0m[0m s/deploy-prod.sh[1m [0m[0m [?2004l
+[deploy-prod] target: deploy@133.88.121.12
+[deploy] preflight checks...
+[preflight] lint
+
+> blog_starter_20260315@0.1.0 lint
+> eslint
+
+⠙[1G[0K[preflight] unit/integration tests
+
+> blog_starter_20260315@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/Users/kojimanozomi/blog[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:45:21
+[2m   Duration [22m812ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:45:21
+[2m   Duration [22m914ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m 0/4[22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (4)[39m
+[2m   Start at [22m22:45:21
+[2m   Duration [22m1.12s
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/lib/__tests__/site-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 5[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/content.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/app/media/[...path]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/time.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 33[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/date.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 0/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m21 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:45:21
+[2m   Duration [22m1.22s
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[90mstderr[2m | src/components/__tests__/markdown-content.test.tsx[2m > [22m[2mMarkdownContent[2m > [22m[2mrenders md-embed via embed registry
+[22m[39mIn HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <MarkdownContent source={"<md-embe..."}>
+    <article className="markdown-body">
+      <Markdown skipHtml={false} remarkPlugins={[...]} rehypePlugins={[...]} components={{...}}>
+>       <p>
+          <md-embed type="latestPosts" source="all" count="3" node={{type:"element", ...}}>
+>           <div data-testid="embed-result">
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+ [32m✓[39m src/components/embeds/__tests__/embed-registry.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 102[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/markdown-content.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 22:45:21
+[2m   Duration [22m 1.30s[2m (transform 358ms, setup 1.49s, import 425ms, tests 245ms, environment 5.04s)[22m
+
+[?25h⠙[1G[0K[preflight] production build
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.6[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 2.6s
+[?25l[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[?25h[?25l[37m[1m [22m[39m Finished TypeScript in 1419.2ms  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finished TypeScript in 1419.2ms    [32m[1m✓[22m[39m Finished TypeScript in 1419.2ms 
+[?25l[37m[1m [22m[39m Collecting page data using 7 workers  [36m.[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m..[39m[2K[1G[?25h[37m[1m [22m[39m Collecting page data using 7 workers in 386.4ms    [32m[1m✓[22m[39m Collecting page data using 7 workers in 386.4ms 
+[?25l[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[    ][39m[2K[1G[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[=   ][39m[2K[1G[?25h[32m[1m✓[22m[39m Generating static pages using 7 workers (8/8) in 206.4ms
+[?25l[37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finalizing page optimization in 6.3ms    [32m[1m✓[22m[39m Finalizing page optimization in 6.3ms 
+
+[4mRoute (app)[24m
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses [36mgenerateStaticParams[39m)
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h⠙[1G[0K[preflight] done
+[deploy] syncing files to deploy@133.88.121.12:/opt/blog/app ...
+deploy@133.88.121.12's password: 
+[deploy] installing prod dependencies on remote...
+deploy@133.88.121.12's password: 
+
+added 592 packages, and audited 593 packages in 11s
+
+275 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.1s
+  Running TypeScript ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/8) ...
+  Generating static pages using 2 workers (2/8) 
+  Generating static pages using 2 workers (4/8) 
+  Generating static pages using 2 workers (6/8) 
+✓ Generating static pages using 2 workers (8/8) in 414.6ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[deploy] validating environment file...
+deploy@133.88.121.12's password: 
+deploy@133.88.121.12's password: 
+[validate-env-file] ok: .env.production
+[deploy] restarting service blog-app...
+deploy@133.88.121.12's password: 
+● blog-app.service - Blog Next.js App
+     Loaded: loaded (/etc/systemd/system/blog-app.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-16 22:46:19 JST; 15ms ago
+   Main PID: 45062 (node)
+      Tasks: 6 (limit: 2263)
+     Memory: 2.3M (peak: 2.3M)
+        CPU: 9ms
+     CGroup: /system.slice/blog-app.service
+             └─45062 node /usr/bin/npm run start
+
+Mar 16 22:46:19 vm-263a836f-67 systemd[1]: Started blog-app.service - Blog Next.js App.
+[deploy] smoke-check...
+FAIL: / expected 200, got 404 after 10 attempts
+[deploy] smoke-check failed.
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hscripts/deploy-prod.sh[?2004l
+[deploy-prod] target: deploy@133.88.121.12
+[deploy] preflight checks...
+[preflight] lint
+
+> blog_starter_20260315@0.1.0 lint
+> eslint
+
+⠙[1G[0K[preflight] unit/integration tests
+
+> blog_starter_20260315@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/Users/kojimanozomi/blog[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:48:26
+[2m   Duration [22m712ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:48:26
+[2m   Duration [22m916ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/lib/__tests__/time.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/site-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 4[2mms[22m[39m
+
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m 1/2[22m
+
+[2m Test Files [22m[1m[32m2 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m8 passed[39m[22m[90m (13)[39m
+[2m   Start at [22m22:48:26
+[2m   Duration [22m1.02s
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/lib/__tests__/date.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32m✓[39m src/app/media/[...path]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/content.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 12[2mms[22m[39m
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 1/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m22 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:48:26
+[2m   Duration [22m1.22s
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[90mstderr[2m | src/components/__tests__/markdown-content.test.tsx[2m > [22m[2mMarkdownContent[2m > [22m[2mrenders md-embed via embed registry
+[22m[39mIn HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <MarkdownContent source={"<md-embe..."}>
+    <article className="markdown-body">
+      <Markdown skipHtml={false} remarkPlugins={[...]} rehypePlugins={[...]} components={{...}}>
+>       <p>
+          <md-embed type="latestPosts" source="all" count="3" node={{type:"element", ...}}>
+>           <div data-testid="embed-result">
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 1/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m22 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:48:26
+[2m   Duration [22m1.22s
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/components/embeds/__tests__/embed-registry.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 114[2mms[22m[39m
+ [32m✓[39m src/components/__tests__/markdown-content.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 37[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 22:48:26
+[2m   Duration [22m 1.23s[2m (transform 342ms, setup 1.36s, import 415ms, tests 226ms, environment 4.58s)[22m
+
+[?25h⠙[1G[0K[preflight] production build
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.6[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 2.3s
+[?25l[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[?25h[?25l[37m[1m [22m[39m Finished TypeScript in 1370.8ms  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finished TypeScript in 1370.8ms    [32m[1m✓[22m[39m Finished TypeScript in 1370.8ms 
+[?25l[37m[1m [22m[39m Collecting page data using 7 workers  [36m.[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m..[39m[2K[1G[?25h[37m[1m [22m[39m Collecting page data using 7 workers in 377.9ms    [32m[1m✓[22m[39m Collecting page data using 7 workers in 377.9ms 
+[?25l[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[    ][39m[2K[1G[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[=   ][39m[2K[1G[?25h[32m[1m✓[22m[39m Generating static pages using 7 workers (8/8) in 206.4ms
+[?25l[37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finalizing page optimization in 7.0ms    [32m[1m✓[22m[39m Finalizing page optimization in 7.0ms 
+
+[4mRoute (app)[24m
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses [36mgenerateStaticParams[39m)
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h⠙[1G[0K[preflight] done
+[deploy] syncing files to deploy@133.88.121.12:/opt/blog/app ...
+deploy@133.88.121.12's password: 
+Permission denied, please try again.
+deploy@133.88.121.12's password: 
+[deploy] installing prod dependencies on remote...
+deploy@133.88.121.12's password: 
+
+added 592 packages, and audited 593 packages in 10s
+
+275 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.0s
+  Running TypeScript ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/8) ...
+  Generating static pages using 2 workers (2/8) 
+  Generating static pages using 2 workers (4/8) 
+  Generating static pages using 2 workers (6/8) 
+✓ Generating static pages using 2 workers (8/8) in 467.3ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[deploy] validating environment file...
+deploy@133.88.121.12's password: 
+deploy@133.88.121.12's password: 
+[validate-env-file] ok: .env.production
+[deploy] restarting service blog-app...
+deploy@133.88.121.12's password: 
+● blog-app.service - Blog Next.js App
+     Loaded: loaded (/etc/systemd/system/blog-app.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-16 22:49:47 JST; 13ms ago
+   Main PID: 45546 ((npm))
+      Tasks: 1 (limit: 2263)
+     Memory: 1.1M (peak: 67.7M)
+        CPU: 6ms
+     CGroup: /system.slice/blog-app.service
+             └─45546 "(npm)"
+
+Mar 16 22:49:47 vm-263a836f-67 systemd[1]: Started blog-app.service - Blog Next.js App.
+[deploy] smoke-check...
+deploy@133.88.121.12's password: 
+[deploy] smoke-check URL from NEXT_PUBLIC_SITE_URL: http://133.88.121.12
+FAIL: / expected 200, got 404 after 10 attempts
+[deploy] smoke-check failed.
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004h[7mTARGET_HOST=blog-conoha TARGET_USER=deploy ./scri[7mp[7mts/deploy.sh[27m[K[A[27mT[27mA[27mR[27mG[27mE[27mT[27m_[27mH[27mO[27mS[27mT[27m=[27mb[27ml[27mo[27mg[27m-[27mc[27mo[27mn[27mo[27mh[27ma[27m [27mT[27mA[27mR[27mG[27mE[27mT[27m_[27mU[27mS[27mE[27mR[27m=[27md[27me[27mp[27ml[27mo[27my[27m [27m.[27m/[27ms[27mc[27mr[27mip[27mt[27ms[27m/[27md[27me[27mp[27ml[27mo[27my[27m.[27ms[27mh[?2004l
+[deploy] preflight checks...
+[preflight] lint
+
+> blog_starter_20260315@0.1.0 lint
+> eslint
+
+⠙[1G[0K[preflight] unit/integration tests
+
+> blog_starter_20260315@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/Users/kojimanozomi/blog[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:51:04
+[2m   Duration [22m707ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:51:04
+[2m   Duration [22m807ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m 0/3[22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (3)[39m
+[2m   Start at [22m22:51:04
+[2m   Duration [22m1.01s
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/lib/__tests__/site-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 3[2mms[22m[39m
+ [32m✓[39m src/app/media/[...path]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/time.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 28[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/date.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/content.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 0/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m21 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:51:04
+[2m   Duration [22m1.11s
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[90mstderr[2m | src/components/__tests__/markdown-content.test.tsx[2m > [22m[2mMarkdownContent[2m > [22m[2mrenders md-embed via embed registry
+[22m[39mIn HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <MarkdownContent source={"<md-embe..."}>
+    <article className="markdown-body">
+      <Markdown skipHtml={false} remarkPlugins={[...]} rehypePlugins={[...]} components={{...}}>
+>       <p>
+          <md-embed type="latestPosts" source="all" count="3" node={{type:"element", ...}}>
+>           <div data-testid="embed-result">
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+ [32m✓[39m src/components/__tests__/markdown-content.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 39[2mms[22m[39m
+ [32m✓[39m src/components/embeds/__tests__/embed-registry.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 115[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 22:51:04
+[2m   Duration [22m 1.22s[2m (transform 382ms, setup 1.46s, import 394ms, tests 216ms, environment 4.42s)[22m
+
+[?25h⠙[1G[0K[preflight] production build
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.6[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 2.2s
+[?25l[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[?25h[?25l[37m[1m [22m[39m Finished TypeScript in 1459.6ms  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finished TypeScript in 1459.6ms    [32m[1m✓[22m[39m Finished TypeScript in 1459.6ms 
+[?25l[37m[1m [22m[39m Collecting page data using 7 workers  [36m.[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m..[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m...[39m[2K[1G[?25h[37m[1m [22m[39m Collecting page data using 7 workers in 432.4ms    [32m[1m✓[22m[39m Collecting page data using 7 workers in 432.4ms 
+[?25l[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[    ][39m[2K[1G[?25h[32m[1m✓[22m[39m Generating static pages using 7 workers (8/8) in 157.9ms
+[?25l[37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finalizing page optimization in 10.2ms    [32m[1m✓[22m[39m Finalizing page optimization in 10.2ms 
+
+[4mRoute (app)[24m
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses [36mgenerateStaticParams[39m)
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h⠙[1G[0K[preflight] done
+[deploy] syncing files to deploy@blog-conoha:/opt/blog/app ...
+[deploy] installing prod dependencies on remote...
+
+added 592 packages, and audited 593 packages in 10s
+
+275 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.1s
+  Running TypeScript ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/8) ...
+  Generating static pages using 2 workers (2/8) 
+  Generating static pages using 2 workers (4/8) 
+  Generating static pages using 2 workers (6/8) 
+✓ Generating static pages using 2 workers (8/8) in 475.0ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[deploy] validating environment file...
+[validate-env-file] ok: .env.production
+[deploy] restarting service blog-app...
+● blog-app.service - Blog Next.js App
+     Loaded: loaded (/etc/systemd/system/blog-app.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-16 22:51:37 JST; 13ms ago
+   Main PID: 46186 (node)
+      Tasks: 6 (limit: 2263)
+     Memory: 1.8M (peak: 2.0M)
+        CPU: 9ms
+     CGroup: /system.slice/blog-app.service
+             └─46186 node /usr/bin/npm run start
+
+Mar 16 22:51:37 vm-263a836f-67 systemd[1]: Started blog-app.service - Blog Next.js App.
+[deploy] smoke-check...
+[deploy] smoke-check URL from NEXT_PUBLIC_SITE_URL: http://133.88.121.12
+FAIL: / expected 200, got 404 after 10 attempts
+[deploy] smoke-check failed.
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hTARGET_HOST=blog-conoha TARGET_USER=deploy ./scripts/deploy.sh[K[Ascripts/deploy-prod.sh[K[1B[K[A[33C[?2004l[1B[deploy-prod] target: deploy@133.88.121.12
+[deploy] preflight checks...
+[preflight] lint
+
+> blog_starter_20260315@0.1.0 lint
+> eslint
+
+⠙[1G[0K[preflight] unit/integration tests
+
+> blog_starter_20260315@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/Users/kojimanozomi/blog[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:52:54
+[2m   Duration [22m714ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:52:54
+[2m   Duration [22m916ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/app/media/[...path]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m 0/2[22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m 0/4[22m
+
+[2m Test Files [22m[1m[32m1 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m4 passed[39m[22m[90m (10)[39m
+[2m   Start at [22m22:52:54
+[2m   Duration [22m1.01s
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/lib/__tests__/time.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/site-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/date.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 18[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/content.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 0/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m21 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:52:54
+[2m   Duration [22m1.12s
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/components/embeds/__tests__/embed-registry.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+[90mstderr[2m | src/components/__tests__/markdown-content.test.tsx[2m > [22m[2mMarkdownContent[2m > [22m[2mrenders md-embed via embed registry
+[22m[39mIn HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <MarkdownContent source={"<md-embe..."}>
+    <article className="markdown-body">
+      <Markdown skipHtml={false} remarkPlugins={[...]} rehypePlugins={[...]} components={{...}}>
+>       <p>
+          <md-embed type="latestPosts" source="all" count="3" node={{type:"element", ...}}>
+>           <div data-testid="embed-result">
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+ [32m✓[39m src/components/__tests__/markdown-content.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 22:52:54
+[2m   Duration [22m 1.19s[2m (transform 357ms, setup 1.35s, import 392ms, tests 209ms, environment 4.24s)[22m
+
+[?25h⠙[1G[0K[preflight] production build
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.6[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 2.2s
+[?25l[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[?25h[?25l[37m[1m [22m[39m Finished TypeScript in 1442.9ms  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finished TypeScript in 1442.9ms    [32m[1m✓[22m[39m Finished TypeScript in 1442.9ms 
+[?25l[37m[1m [22m[39m Collecting page data using 7 workers  [36m.[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m..[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m...[39m[2K[1G[?25h[37m[1m [22m[39m Collecting page data using 7 workers in 473.6ms    [32m[1m✓[22m[39m Collecting page data using 7 workers in 473.6ms 
+[?25l[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[    ][39m[2K[1G[?25h[32m[1m✓[22m[39m Generating static pages using 7 workers (8/8) in 182.6ms
+[?25l[37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finalizing page optimization in 7.3ms    [32m[1m✓[22m[39m Finalizing page optimization in 7.3ms 
+
+[4mRoute (app)[24m
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses [36mgenerateStaticParams[39m)
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h⠙[1G[0K[preflight] done
+[deploy] syncing files to deploy@133.88.121.12:/opt/blog/app ...
+[deploy] installing prod dependencies on remote...
+
+added 592 packages, and audited 593 packages in 10s
+
+275 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.2s
+  Running TypeScript ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/8) ...
+  Generating static pages using 2 workers (2/8) 
+  Generating static pages using 2 workers (4/8) 
+  Generating static pages using 2 workers (6/8) 
+✓ Generating static pages using 2 workers (8/8) in 461.0ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[deploy] validating environment file...
+[validate-env-file] ok: .env.production
+[deploy] restarting service blog-app...
+● blog-app.service - Blog Next.js App
+     Loaded: loaded (/etc/systemd/system/blog-app.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-16 22:53:26 JST; 12ms ago
+   Main PID: 46790 (node)
+      Tasks: 6 (limit: 2263)
+     Memory: 2.0M (peak: 65.8M)
+        CPU: 11ms
+     CGroup: /system.slice/blog-app.service
+             └─46790 node /usr/bin/npm run start
+
+Mar 16 22:53:26 vm-263a836f-67 systemd[1]: Started blog-app.service - Blog Next.js App.
+[deploy] smoke-check...
+[deploy] smoke-check URL from NEXT_PUBLIC_SITE_URL: https://hutaroblog.com
+OK: / -> 200 (attempt 1/10)
+OK: /blog -> 200 (attempt 1/10)
+OK: /api/health -> 200 (attempt 1/10)
+OK: /api/health body includes status ok
+[smoke-check] done
+[deploy] done
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004hscripts/deploy-prod.sh[?2004l
+[deploy-prod] target: deploy@133.88.121.12
+[deploy] preflight checks...
+[preflight] lint
+
+> blog_starter_20260315@0.1.0 lint
+> eslint
+
+⠙[1G[0K[preflight] unit/integration tests
+
+> blog_starter_20260315@0.1.0 test
+> vitest run
+
+[?25l
+[1m[46m RUN [49m[22m [36mv4.1.0 [39m[90m/Users/kojimanozomi/blog[39m
+
+[?2026h
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:55:29
+[2m   Duration [22m711ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:55:29
+[2m   Duration [22m810ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K
+[1m[33m ❯ [39m[22msrc/app/media/[...path]/route.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/content.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/date.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/site-config.test.ts[2m [queued][22m
+[1m[33m ❯ [39m[22msrc/lib/__tests__/time.test.ts[2m [queued][22m
+
+[2m Test Files [22m[1m[32m0 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m0 passed[39m[22m[90m (0)[39m
+[2m   Start at [22m22:55:29
+[2m   Duration [22m911ms
+[?2026l[?2026h[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K [32m✓[39m src/app/media/[...path]/route.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 6[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/date.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 19[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/site-config.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/content.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32m✓[39m src/lib/__tests__/time.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+
+
+[1m[33m ❯ [39m[22msrc/components/__tests__/markdown-content.test.tsx[2m 0/4[22m
+[1m[33m ❯ [39m[22msrc/components/embeds/__tests__/embed-registry.test.tsx[2m 0/3[22m
+
+[2m Test Files [22m[1m[32m5 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m[1m[32m21 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m22:55:29
+[2m   Duration [22m1.11s
+[?2026l[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[1A[K[90mstderr[2m | src/components/__tests__/markdown-content.test.tsx[2m > [22m[2mMarkdownContent[2m > [22m[2mrenders md-embed via embed registry
+[22m[39mIn HTML, <div> cannot be a descendant of <p>.
+This will cause a hydration error.
+
+  <MarkdownContent source={"<md-embe..."}>
+    <article className="markdown-body">
+      <Markdown skipHtml={false} remarkPlugins={[...]} rehypePlugins={[...]} components={{...}}>
+>       <p>
+          <md-embed type="latestPosts" source="all" count="3" node={{type:"element", ...}}>
+>           <div data-testid="embed-result">
+
+<p> cannot contain a nested <div>.
+See this log for the ancestor stack trace.
+
+ [32m✓[39m src/components/__tests__/markdown-content.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 38[2mms[22m[39m
+ [32m✓[39m src/components/embeds/__tests__/embed-registry.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 106[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m7 passed[39m[22m[90m (7)[39m
+[2m      Tests [22m [1m[32m28 passed[39m[22m[90m (28)[39m
+[2m   Start at [22m 22:55:29
+[2m   Duration [22m 1.19s[2m (transform 279ms, setup 1.32s, import 418ms, tests 208ms, environment 4.35s)[22m
+
+[?25h⠙[1G[0K[preflight] production build
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+[1m[38;2;173;127;168m▲ Next.js 16.1.6[39m[22m (Turbopack)
+
+[37m[1m [22m[39m Creating an optimized production build ...
+[32m[1m✓[22m[39m Compiled successfully in 2.3s
+[?25l[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m...[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m.[39m[2K[1G[37m[1m [22m[39m Running TypeScript  [36m..[39m[2K[1G[?25h[?25l[37m[1m [22m[39m Finished TypeScript in 1416.9ms  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finished TypeScript in 1416.9ms    [32m[1m✓[22m[39m Finished TypeScript in 1416.9ms 
+[?25l[37m[1m [22m[39m Collecting page data using 7 workers  [36m.[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m..[39m[2K[1G[37m[1m [22m[39m Collecting page data using 7 workers  [36m...[39m[2K[1G[?25h[37m[1m [22m[39m Collecting page data using 7 workers in 441.9ms    [32m[1m✓[22m[39m Collecting page data using 7 workers in 441.9ms 
+[?25l[37m[1m [22m[39m Generating static pages using 7 workers (0/8)  [36m[    ][39m[2K[1G[37m[1m [22m[39m Generating static pages using 7 workers (1/8)  [36m[=   ][39m[2K[1G[?25h[32m[1m✓[22m[39m Generating static pages using 7 workers (8/8) in 204.9ms
+[?25l[37m[1m [22m[39m Finalizing page optimization  [36m.[39m[2K[1G[?25h[37m[1m [22m[39m Finalizing page optimization in 6.2ms    [32m[1m✓[22m[39m Finalizing page optimization in 6.2ms 
+
+[4mRoute (app)[24m
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses [36mgenerateStaticParams[39m)
+ƒ  (Dynamic)  server-rendered on demand
+
+[?25h⠙[1G[0K[preflight] done
+[deploy] syncing files to deploy@133.88.121.12:/opt/blog/app ...
+[deploy] installing prod dependencies on remote...
+
+added 592 packages, and audited 593 packages in 10s
+
+275 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+
+> blog_starter_20260315@0.1.0 build
+> next build
+
+▲ Next.js 16.1.6 (Turbopack)
+- Environments: .env.production
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.2s
+  Running TypeScript ...
+  Collecting page data using 2 workers ...
+  Generating static pages using 2 workers (0/8) ...
+  Generating static pages using 2 workers (2/8) 
+  Generating static pages using 2 workers (4/8) 
+  Generating static pages using 2 workers (6/8) 
+✓ Generating static pages using 2 workers (8/8) in 479.5ms
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ƒ /api/health
+├ ○ /blog
+├ ○ /blog-tech
+├ ● /blog-tech/[slug]
+├ ● /blog/[slug]
+│ └ /blog/1
+├ ○ /demos
+└ ƒ /media/[...path]
+
+
+○  (Static)   prerendered as static content
+●  (SSG)      prerendered as static HTML (uses generateStaticParams)
+ƒ  (Dynamic)  server-rendered on demand
+
+[deploy] validating environment file...
+[validate-env-file] ok: .env.production
+[deploy] restarting service blog-app...
+● blog-app.service - Blog Next.js App
+     Loaded: loaded (/etc/systemd/system/blog-app.service; enabled; preset: enabled)
+     Active: active (running) since Mon 2026-03-16 22:56:02 JST; 13ms ago
+   Main PID: 47306 ((npm))
+      Tasks: 1 (limit: 2263)
+     Memory: 1.6M (peak: 1.6M)
+        CPU: 4ms
+     CGroup: /system.slice/blog-app.service
+             └─47306 "(npm)"
+
+Mar 16 22:56:02 vm-263a836f-67 systemd[1]: Started blog-app.service - Blog Next.js App.
+[deploy] smoke-check...
+[deploy] smoke-check URL from NEXT_PUBLIC_SITE_URL: https://hutaroblog.com
+OK: / -> 200 (attempt 1/10)
+OK: /blog -> 200 (attempt 1/10)
+OK: /api/health -> 200 (attempt 1/10)
+OK: /api/health body includes status ok
+[smoke-check] done
+[deploy] done
+[1m[7m%[27m[1m[0m                                                            [0m[27m[24m[J__% ~/blog [K[?2004h

@@ -569,6 +569,12 @@ a {
 }
 
 @media (max-width: 720px) {
+  .scene-burst {
+    font-size: clamp(0.8rem, 0.72rem + 0.7vw, 1rem);
+    letter-spacing: 0.08em;
+    max-height: 76%;
+  }
+
   .site-header-inner {
     align-items: flex-start;
     flex-direction: column;

@@ -96,7 +96,26 @@ if ! ssh -p "${SSH_PORT}" "${TARGET_USER}@${TARGET_HOST}" \
 fi
 
 echo "[deploy] smoke-check..."
-SMOKE_URL="${SMOKE_URL:-http://${TARGET_HOST}}"
+if [[ -z "${SMOKE_URL:-}" ]]; then
+  REMOTE_SITE_URL="$(ssh -p "${SSH_PORT}" "${TARGET_USER}@${TARGET_HOST}" "
+    set -euo pipefail
+    sed -n 's/^NEXT_PUBLIC_SITE_URL=//p' '${TARGET_PATH}/.env.production' | head -n1
+  " | tr -d '\r')"
+  REMOTE_SITE_URL="${REMOTE_SITE_URL%\"}"
+  REMOTE_SITE_URL="${REMOTE_SITE_URL#\"}"
+  REMOTE_SITE_URL="${REMOTE_SITE_URL%\'}"
+  REMOTE_SITE_URL="${REMOTE_SITE_URL#\'}"
+  if [[ -n "${REMOTE_SITE_URL}" ]]; then
+    SMOKE_URL="${REMOTE_SITE_URL}"
+    echo "[deploy] smoke-check URL from NEXT_PUBLIC_SITE_URL: ${SMOKE_URL}"
+  else
+    SMOKE_URL="http://${TARGET_HOST}"
+    echo "[deploy] smoke-check URL fallback: ${SMOKE_URL}"
+  fi
+else
+  SMOKE_URL="${SMOKE_URL}"
+  echo "[deploy] smoke-check URL override: ${SMOKE_URL}"
+fi
 SMOKE_RETRIES="${SMOKE_RETRIES:-10}"
 SMOKE_DELAY_SEC="${SMOKE_DELAY_SEC:-2}"
 if ! BASE_URL="${SMOKE_URL}" SMOKE_RETRIES="${SMOKE_RETRIES}" SMOKE_DELAY_SEC="${SMOKE_DELAY_SEC}" ./scripts/smoke-check.sh; then

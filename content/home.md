@@ -28,8 +28,8 @@
 ## 各種リンク
 ---
 
-[Atcoder](https://atcoder.jp/users/Astral__) ...一時頑張っていました。
+[AtCoder](https://atcoder.jp/users/Astral__) ...一時頑張っていました。
 
-[github](https://github.com/Astral-23)  
+[Github](https://github.com/Astral-23)  
 
 [X](https://x.com/inuki_fuko_no_1)...人に読まれる事を想定していない文章を書きます。
