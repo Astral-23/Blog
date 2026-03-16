@@ -29,4 +29,16 @@ describe("MarkdownContent", () => {
     expect(screen.queryByRole("link")).not.toBeInTheDocument();
     expect(screen.getByText("danger")).toBeInTheDocument();
   });
+
+  it("blocks vbscript links", () => {
+    render(<MarkdownContent source={"[danger](vbscript:msgbox('x'))"} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.getByText("danger")).toBeInTheDocument();
+  });
+
+  it("blocks data html links", () => {
+    render(<MarkdownContent source={"[danger](data:text/html;base64,PHNjcmlwdD5hbGVydCgxKTwvc2NyaXB0Pg==)"} />);
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+    expect(screen.getByText("danger")).toBeInTheDocument();
+  });
 });

@@ -1,0 +1,26 @@
+[Unit]
+Description=Blog Next.js App
+After=network.target
+
+[Service]
+Type=simple
+User=deploy
+Group=deploy
+WorkingDirectory=/opt/blog/app
+EnvironmentFile=/opt/blog/app/.env.production
+ExecStart=/usr/bin/npm run start
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectControlGroups=true
+ProtectKernelTunables=true
+ProtectKernelModules=true
+RestrictSUIDSGID=true
+LockPersonality=true
+UMask=027
+StandardOutput=append:/var/log/blog/app.log
+StandardError=append:/var/log/blog/app.error.log
+
+[Install]
+WantedBy=multi-user.target

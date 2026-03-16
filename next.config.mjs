@@ -1,6 +1,4 @@
-import type { NextConfig } from "next";
-
-const csp = [
+const cspDirectives = [
   "default-src 'self'",
   "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
@@ -10,13 +8,21 @@ const csp = [
   "base-uri 'self'",
   "frame-ancestors 'none'",
   "form-action 'self'",
-  "upgrade-insecure-requests",
-].join("; ");
+];
 
-const nextConfig: NextConfig = {
+// Enable this only after HTTPS is correctly configured.
+if (process.env.CSP_UPGRADE_INSECURE_REQUESTS === "1") {
+  cspDirectives.push("upgrade-insecure-requests");
+}
+
+const csp = cspDirectives.join("; ");
+
+/** @type {import('next').NextConfig} */
+const nextConfig = {
   turbopack: {
     root: process.cwd(),
   },
+  allowedDevOrigins: ["127.0.0.1", "localhost"],
   async headers() {
     return [
       {

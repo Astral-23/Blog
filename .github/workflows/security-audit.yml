@@ -1,0 +1,60 @@
+name: Security Audit
+
+on:
+  schedule:
+    - cron: "15 21 * * *" # 06:15 JST
+  workflow_dispatch:
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Prepare SSH key
+        if: ${{ secrets.CONOHA_SSH_KEY != '' && secrets.CONOHA_HOST != '' }}
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          printf '%s\n' "${{ secrets.CONOHA_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H "${{ secrets.CONOHA_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Skip when secrets are missing
+        if: ${{ secrets.CONOHA_SSH_KEY == '' || secrets.CONOHA_HOST == '' }}
+        run: |
+          echo "CONOHA_HOST / CONOHA_SSH_KEY secrets are required."
+          echo "Skipping remote audit."
+          exit 0
+
+      - name: Run daily security audit
+        if: ${{ secrets.CONOHA_SSH_KEY != '' && secrets.CONOHA_HOST != '' }}
+        env:
+          TARGET_HOST: ${{ secrets.CONOHA_HOST }}
+          TARGET_USER: ${{ secrets.CONOHA_USER != '' && secrets.CONOHA_USER || 'deploy' }}
+          REQUIRE_CERTBOT_TIMER: ${{ secrets.REQUIRE_CERTBOT_TIMER != '' && secrets.REQUIRE_CERTBOT_TIMER || '0' }}
+          AUDIT_REPORT_DIR: ./audit-reports
+          RETAIN_REPORTS: "14"
+          MAX_FAILED: "0"
+          MAX_NEW_FAILURES: "0"
+        run: npm run ops:security-audit:daily
+
+      - name: Upload audit artifacts
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-audit-artifacts
+          path: audit-reports/
+          if-no-files-found: ignore

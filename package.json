@@ -22,7 +22,20 @@
     "publish:secure": "npm run lint && npm run test && npm run build && npm run security",
     "assets:optimize": "node scripts/optimize-assets.mjs",
     "assets:optimize:dry": "node scripts/optimize-assets.mjs --dry-run",
-    "assets:resize": "node scripts/optimize-assets.mjs"
+    "assets:resize": "node scripts/optimize-assets.mjs",
+    "ops:sanity": "./scripts/ops-sanity.sh",
+    "ops:validate-env:example": "./scripts/validate-env-file.sh --file env.production.example --required \"NODE_ENV PORT NEXT_PUBLIC_SITE_URL SENSOR_API_KEY\"",
+    "security:smoke": "./scripts/security-smoke.sh",
+    "ops:status": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/remote-status.sh",
+    "ops:recover": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/remote-recover.sh",
+    "ops:security-status": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/remote-security-status.sh",
+    "ops:security-audit": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/remote-security-audit.sh",
+    "ops:security-audit:json": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} AUDIT_FORMAT=json ./scripts/remote-security-audit.sh",
+    "ops:security-audit:report": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/security-audit-report.sh",
+    "ops:security-audit:summary": "node scripts/security-audit-summary.mjs --input-dir=./audit-reports --max-failed=0",
+    "ops:security-audit:summary:md": "node scripts/security-audit-summary.mjs --input-dir=./audit-reports --output=./audit-reports/latest-summary.md --max-failed=0",
+    "ops:security-audit:regression": "node scripts/security-audit-regression.mjs --input-dir=./audit-reports --max-new-failures=0",
+    "ops:security-audit:daily": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/security-audit-daily.sh"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",
