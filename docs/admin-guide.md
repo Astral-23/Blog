@@ -10,6 +10,28 @@
 - `content/blog/*.md` と `content/blog-tech/*.md` にある記事が公開対象です。
 - `content/wip/` は非公開です。
 
+### 公開手順（この順でやれば本番に反映される）
+1. 記事/画像を更新する
+   - 記事: `content/blog/` または `content/blog-tech/`
+   - 画像/動画: `content/assets/`
+2. ローカル確認
+   - `npm run preview`（または `npm run build`）を実行して `.meta` を生成
+   - `npm run publish:secure` を通す
+3. Gitへ反映
+   - `git add .`
+   - `git commit -m "publish: ..."`
+   - `git push`
+4. 本番サーバーへデプロイ（ConoHa）
+   - 直打ち: `TARGET_HOST=133.88.121.12 TARGET_USER=deploy ./scripts/deploy.sh`
+   - 1コマンド版: `./scripts/deploy-prod.sh`
+5. 公開確認（本番URL）
+   - `curl -I https://hutaroblog.com`
+   - `curl -I http://hutaroblog.com`（HTTPSへリダイレクトされること）
+
+補足:
+- `npm run publish:secure` が通っていても、`deploy.sh` を実行しない限り本番には反映されません。
+- `content/wip/` に置いた記事はデプロイしても公開されません。
+
 ## 2. ローカルで表示確認する方法
 - ふだんの確認: `npm run dev`
 - ブラウザ: `http://localhost:3000`

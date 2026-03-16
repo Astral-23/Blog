@@ -3,15 +3,16 @@
 最終更新: 2026-03-16  
 対象スペック: 2GB RAM / 3core / SSD 100GB
 
-## 現在ステータス（途中経過）
-- ConoHaでHTTP公開は完了
-- 独自ドメインとHTTPS化は未完了
-- そのため、移行プロジェクトは「運用中だが最終完了前」
+## 現在ステータス（完了）
+- ConoHaでHTTP/HTTPS公開は完了
+- 独自ドメイン `hutaroblog.com` で運用中
+- HTTPはHTTPSへリダイレクト済み
+- 証明書自動更新（certbot timer）有効
 
 ## 0. 事前決定（確定）
-- SSL: Let's Encrypt（独自ドメイン取得後に適用）
+- SSL: Let's Encrypt（適用済み）
 - SSH: `deploy` ユーザー + 公開鍵認証のみ
-- ドメイン: まずVPS IPでStaging確認、その後に独自ドメインへ切替
+- ドメイン: 正規ホストは `hutaroblog.com`
 
 ## 1. 初期セットアップ
 1. 管理ユーザー作成（`deploy`）
@@ -100,7 +101,7 @@ upstream blog_upstream {
 server {
   listen 80;
   listen [::]:80;
-  server_name _;
+  server_name hutaroblog.com;
 
   client_max_body_size 10m;
   client_body_timeout 15s;
@@ -133,16 +134,18 @@ sudo nginx -t
 sudo systemctl reload nginx
 ```
 
-### 6.1 HTTPS化（独自ドメイン取得後）
+### 6.1 HTTPS化（実施済み）
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d your-domain.example -d www.your-domain.example
+sudo certbot --nginx -d hutaroblog.com
 sudo certbot renew --dry-run
 ```
 
 注意:
-- 独自ドメインがない段階では証明書発行できません。
-- 先にHTTPでStaging動作確認を行い、ドメイン取得後にHTTPS化します。
+- `Could not automatically find a matching server block` が出た場合は、
+  `server_name hutaroblog.com;` を確認後に `sudo certbot install --cert-name hutaroblog.com` を実行します。
+- DNS伝播中に一部端末で名前解決できない場合があります。
+  `dig @1.1.1.1 hutaroblog.com A +short` / `dig @8.8.8.8 hutaroblog.com A +short` で外部到達を確認します。
 
 ## 7. ヘルスチェック
 - `GET /api/health` が `200` と `{"status":"ok"}` を返すこと
@@ -170,8 +173,8 @@ sudo certbot renew --dry-run
 - デプロイ前チェックのみ実行:
   - `./scripts/release-preflight.sh`
 - デプロイ後スモークのみ実行:
-  - `BASE_URL=http://<VPS_IP> ./scripts/smoke-check.sh`
-  - セキュリティ確認: `BASE_URL=http://<VPS_IP> ./scripts/security-smoke.sh`
+  - `BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh`
+  - セキュリティ確認: `BASE_URL=https://hutaroblog.com ./scripts/security-smoke.sh`
 - ログ確認:
   - `journalctl -u blog-app -n 200 --no-pager`
   - `sudo tail -n 200 /var/log/nginx/error.log`
@@ -209,8 +212,8 @@ sudo certbot renew --dry-run
 4. 障害内容を記録（原因、再発防止）
 
 ## 11. 初回当日チェックリスト
-1. `curl -i http://<VPS_IP>/api/health` が 200 になる
-2. `curl -i http://<VPS_IP>/blog` が 200 になる
+1. `curl -i https://hutaroblog.com/api/health` が 200 になる
+2. `curl -i https://hutaroblog.com/blog` が 200 になる
 3. `journalctl -u blog-app -n 100 --no-pager` に致命的エラーがない
 4. `df -h` でディスク使用率を確認
 

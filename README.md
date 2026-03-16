@@ -21,6 +21,7 @@ npm run ops:validate-env:example
 ConoHa公開:
 
 ```bash
+./scripts/deploy-prod.sh
 TARGET_HOST=<ip-or-domain> TARGET_USER=deploy ./scripts/deploy.sh
 TARGET_HOST=<ip-or-domain> TARGET_USER=deploy AUTO_ROLLBACK_ON_FAILURE=1 ./scripts/deploy.sh
 TARGET_HOST=<ip-or-domain> TARGET_USER=deploy AUTO_ROLLBACK_ON_FAILURE=1 SECURITY_SMOKE_AFTER_DEPLOY=1 SMOKE_URL=http://<ip-or-domain> ./scripts/deploy.sh
@@ -40,6 +41,13 @@ npm run ops:security-audit:summary
 npm run ops:security-audit:summary:md
 npm run ops:security-audit:regression
 TARGET_HOST=<ip-or-domain> TARGET_USER=deploy npm run ops:security-audit:daily
+```
+
+本番確認（hutaroblog.com）:
+
+```bash
+curl -I https://hutaroblog.com
+curl -I http://hutaroblog.com
 ```
 
 画像最適化:
