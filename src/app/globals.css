@@ -346,6 +346,60 @@ a {
   font-weight: 600;
 }
 
+.scene-figure {
+  margin: 1rem 0;
+}
+
+.scene-image-button {
+  all: unset;
+  display: block;
+  width: 100%;
+  cursor: pointer;
+  position: relative;
+  border-radius: 12px;
+}
+
+.scene-image-button .markdown-image {
+  margin: 0;
+}
+
+.scene-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: 12px;
+}
+
+.scene-burst {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  writing-mode: vertical-rl;
+  text-orientation: upright;
+  max-height: 82%;
+  text-align: center;
+  line-height: 1.05;
+  font-size: clamp(1.05rem, 0.9rem + 1vw, 1.5rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #547443;
+  font-family:
+    "HanziPen SC",
+    "Hannotate SC",
+    "Hiragino Maru Gothic ProN",
+    "Segoe Print",
+    "Comic Sans MS",
+    cursive;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  animation: scene-overlay-burst 3000ms ease forwards;
+}
+
+.scene-burst .scene-small-kana {
+  font-size: 0.68em;
+  line-height: 1;
+}
+
 .embed-latest-posts {
   margin: 1.2rem 0;
   padding: 0.9rem 1rem;
@@ -492,6 +546,25 @@ a {
   }
   100% {
     filter: drop-shadow(0 0 0.65rem rgba(255, 255, 255, 0.75));
+  }
+}
+
+@keyframes scene-overlay-burst {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
+  }
+  12% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  70% {
+    opacity: 1;
+    transform: translate(-50%, calc(-50% - 4px)) scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, calc(-50% - 8px)) scale(1.02);
   }
 }
 

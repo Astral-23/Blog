@@ -5,6 +5,7 @@
 2. 画像/動画: `content/assets/` に置いて `assets/...` で参照
 3. 確認: `npm run dev`（`http://localhost:3000`）
 4. 公開前チェック: `npm run publish:secure`
+5. 本番反映: `./scripts/deploy-prod.sh`
 
 ## 1. 何をすれば公開される？
 - `content/blog/*.md` と `content/blog-tech/*.md` にある記事が公開対象です。
@@ -60,6 +61,7 @@
 4. 記事から `![alt](assets/xxx.png)` や `![video](assets/sample.mp4)` で参照
 5. `npm run preview`（または `npm run build`）を1回実行して `.meta` 日時ファイルを生成
 6. `npm run publish:secure` を実行
+7. `./scripts/deploy-prod.sh` を実行して本番へ反映
 
 画像キャプション/回転の例:
 ```md

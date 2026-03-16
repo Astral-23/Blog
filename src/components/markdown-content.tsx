@@ -7,6 +7,7 @@ import rehypeKatex from "rehype-katex";
 import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { renderEmbed } from "@/components/embeds/embed-registry";
+import { SceneOverlayImage } from "@/components/scene-overlay-image";
 
 type MarkdownContentProps = {
   source: string;
@@ -18,6 +19,7 @@ type ImageMeta = {
   width?: string;
   height?: string;
   maxWidth?: string;
+  voices?: string[];
 };
 
 const sanitizeSchema = {
@@ -126,6 +128,17 @@ function parseImageMeta(title?: string): ImageMeta {
       continue;
     }
 
+    if (key === "voice" || key === "voices") {
+      const lines = value
+        .split("|")
+        .map((line) => line.trim())
+        .filter(Boolean);
+      if (lines.length > 0) {
+        meta.voices = lines;
+      }
+      continue;
+    }
+
     if (!meta.caption) {
       meta.caption = token;
     }
@@ -201,6 +214,23 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
       );
 
       if (meta.caption) {
+        if (meta.voices && meta.voices.length > 0) {
+          return (
+            <SceneOverlayImage
+              src={mapped}
+              alt={alt ?? ""}
+              caption={meta.caption}
+              voices={meta.voices}
+              imageStyle={{
+                transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
+                width: meta.width,
+                height: meta.height,
+                maxWidth: meta.maxWidth,
+              }}
+            />
+          );
+        }
+
         return (
           <figure className="markdown-figure">
             {image}
