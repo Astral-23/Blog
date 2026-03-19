@@ -1,7 +1,9 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { MarkdownContent } from "@/components/markdown-content";
 import { getPostBySlug, getPostsBySection } from "@/lib/content";
 import { formatDisplayDate } from "@/lib/date";
+import { getSiteSettings } from "@/lib/site-config";
 
 type PageProps = {
   params: Promise<{ slug: string }>;
@@ -9,6 +11,24 @@ type PageProps = {
 
 export function generateStaticParams() {
   return getPostsBySection("blog-tech").map((post) => ({ slug: post.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const post = getPostBySlug("blog-tech", slug);
+  const site = getSiteSettings();
+
+  if (!post) {
+    return {
+      title: site.title,
+      description: site.description,
+    };
+  }
+
+  return {
+    title: `${post.title} | ${site.title}`,
+    description: post.excerpt || site.description,
+  };
 }
 
 export default async function TechPostPage({ params }: PageProps) {
@@ -21,11 +41,12 @@ export default async function TechPostPage({ params }: PageProps) {
 
   return (
     <section className="page-wrap">
+      <h1 className="page-title">{post.title}</h1>
       <div className="post-meta">
         <p>Published: {formatDisplayDate(post.publishedAt)}</p>
         <p>Updated: {formatDisplayDate(post.updatedAt)}</p>
       </div>
-      <MarkdownContent source={post.content} />
+      <MarkdownContent source={post.content} demoteH1 />
     </section>
   );
 }

@@ -11,6 +11,7 @@ import { SceneOverlayImage } from "@/components/scene-overlay-image";
 
 type MarkdownContentProps = {
   source: string;
+  demoteH1?: boolean;
 };
 
 type ImageMeta = {
@@ -174,7 +175,7 @@ function mapSafeHref(href?: string): string | undefined {
   return href;
 }
 
-export function MarkdownContent({ source }: MarkdownContentProps) {
+export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentProps) {
   const components = {
     "md-embed": ({ ...props }) => {
       const rawProps = props as Record<string, unknown>;
@@ -311,6 +312,19 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
           {children}
         </a>
       );
+    },
+    h1: ({
+      children,
+      ...props
+    }: {
+      children?: ReactNode;
+      className?: string;
+      id?: string;
+    }) => {
+      if (!demoteH1) {
+        return <h1 {...props}>{children}</h1>;
+      }
+      return <h2 {...props}>{children}</h2>;
     },
   } as unknown as Components;
 
