@@ -11,6 +11,7 @@ export type Post = {
   title: string;
   content: string;
   excerpt: string;
+  cardImage: string | null;
   section: Section;
   publishedAt: string;
   updatedAt: string;
@@ -231,6 +232,12 @@ function makePost(filePath: string, section: Section): Post {
       ? parsed.data.summary.trim()
       : null;
   const excerpt = customSummary ?? makeExcerpt(content);
+  const customCardImage =
+    typeof parsed.data.card === "string" && parsed.data.card.trim().length > 0
+      ? parsed.data.card.trim()
+      : typeof parsed.data.ogImage === "string" && parsed.data.ogImage.trim().length > 0
+        ? parsed.data.ogImage.trim()
+        : null;
   const dates = getGitDates(filePath);
   const publishedAt = resolvePublishedAt(filePath, dates.publishedAt);
   const updatedAt = resolveUpdatedAt(filePath, dates.updatedAt, publishedAt, dates.source);
@@ -240,6 +247,7 @@ function makePost(filePath: string, section: Section): Post {
     title,
     content,
     excerpt,
+    cardImage: customCardImage,
     section,
     publishedAt,
     updatedAt,

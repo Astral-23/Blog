@@ -59,4 +59,5 @@ npm run assets:optimize
 補足:
 - 本番運用は ConoHa VPS 前提です。
 - ランタイム設定はサーバー側 `.env.production` を使用します（Git管理しません）。
+- アクセスカウンター永続化のため、本番 `.env.production` に `ACCESS_COUNTER_STORE_PATH=/opt/blog/shared/access-counter.json` を設定してください。
 - GitHub Actions は `.github/workflows/ci.yml`（CI）と `.github/workflows/security-audit.yml`（日次監査）を用意しています。

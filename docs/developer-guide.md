@@ -31,7 +31,9 @@
 ## 4. Markdown処理のベストプラクティス
 - GFM/数式はレンダラ側で一括管理し、ページごとにプラグインを重複設定しない。
 - ブログ名やナビは `content/site.json` を単一の設定ソースにする。
-- `title` Frontmatter があれば優先し、未指定時は先頭`#`見出し、さらに未指定時はslugを使う。
+- 記事ページの`h1`は `title` Frontmatter を唯一の正本とする（SEO要件）。
+- 記事ページでは本文の先頭`#`を`h2`に降格して、`h1`重複を避ける。
+- 互換性のため `title` 未指定時は先頭`#`見出し、さらに未指定時はslugを使うが、公開運用では`title`必須を推奨する。
 - `summary` Frontmatter があれば一覧説明文に優先し、未指定時は本文から自動生成する。
 - 画像パスは `assets/...` 形式を標準とし、変換ロジックを `MarkdownContent` に集約する。
 - Frontmatter必須化は現時点では行わない。将来導入時は後方互換を保つ。
@@ -42,6 +44,7 @@
 - `updatedAt`: Git最終コミット日時
 - Git履歴なし環境のみファイル時刻へフォールバック
 - `.meta` 日時メモは記事読み込み時に生成されるため、公開前に `npm run preview` または `npm run build` を最低1回実行する
+- アクセスカウンターの本番保存先は `ACCESS_COUNTER_STORE_PATH` で `/opt/blog/shared/access-counter.json` のようなアプリ外パスを使う
 
 実装ルール:
 - 日付生成ロジックは `src/lib/content.ts` 以外に分散させない。

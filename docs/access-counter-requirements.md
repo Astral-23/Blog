@@ -30,6 +30,7 @@
 ## 5. 運用要件
 1. データ保存先は環境変数 `ACCESS_COUNTER_STORE_PATH` で上書き可能とする。
 2. 未指定時の保存先は `content/.meta/access-counter.json` とする。
+3. 本番運用では、デプロイで上書きされないよう `ACCESS_COUNTER_STORE_PATH=/opt/blog/shared/access-counter.json` のようなアプリ外永続パスを使用する。
 
 ## 6. 受け入れ基準
 - homeページを1回開くと、`home` の `total` が1増える。

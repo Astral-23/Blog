@@ -69,6 +69,7 @@ rsync -az --delete \
   --exclude="node_modules" \
   --exclude="test-results" \
   --exclude=".env.production" \
+  --exclude="content/.meta/access-counter.json" \
   -e "ssh -p ${SSH_PORT}" \
   ./ "${TARGET_USER}@${TARGET_HOST}:${TARGET_PATH}/"
 
@@ -83,6 +84,36 @@ ssh -p "${SSH_PORT}" "${TARGET_USER}@${TARGET_HOST}" "
   set -euo pipefail
   cd '${TARGET_PATH}'
   ./scripts/validate-env-file.sh --file .env.production --required '${REQUIRED_ENV_KEYS}'
+"
+
+echo "[deploy] preparing access-counter store..."
+ssh -p "${SSH_PORT}" "${TARGET_USER}@${TARGET_HOST}" "
+  set -euo pipefail
+  cd '${TARGET_PATH}'
+
+  COUNTER_STORE_PATH=\"\$(sed -n 's/^ACCESS_COUNTER_STORE_PATH=//p' .env.production | head -n1 | tr -d '\r')\"
+  COUNTER_STORE_PATH=\"\${COUNTER_STORE_PATH%\\\"}\"
+  COUNTER_STORE_PATH=\"\${COUNTER_STORE_PATH#\\\"}\"
+  COUNTER_STORE_PATH=\"\${COUNTER_STORE_PATH%\\'}\"
+  COUNTER_STORE_PATH=\"\${COUNTER_STORE_PATH#\\'}\"
+
+  FALLBACK_PATH='${TARGET_PATH}/content/.meta/access-counter.json'
+
+  if [[ -z \"\${COUNTER_STORE_PATH}\" ]]; then
+    echo '[deploy] WARN: ACCESS_COUNTER_STORE_PATH is not set. using fallback inside app directory.'
+    echo '[deploy] WARN: recommended value: /opt/blog/shared/access-counter.json'
+  else
+    mkdir -p \"\$(dirname \"\${COUNTER_STORE_PATH}\")\"
+    if [[ ! -f \"\${COUNTER_STORE_PATH}\" ]]; then
+      if [[ -f \"\${FALLBACK_PATH}\" ]]; then
+        cp \"\${FALLBACK_PATH}\" \"\${COUNTER_STORE_PATH}\"
+        echo \"[deploy] initialized counter store from fallback: \${COUNTER_STORE_PATH}\"
+      else
+        echo '{\"version\":1,\"counters\":{}}' > \"\${COUNTER_STORE_PATH}\"
+        echo \"[deploy] initialized empty counter store: \${COUNTER_STORE_PATH}\"
+      fi
+    fi
+  fi
 "
 
 echo "[deploy] restarting service ${APP_SERVICE}..."

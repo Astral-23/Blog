@@ -32,6 +32,7 @@
 補足:
 - `npm run publish:secure` が通っていても、`deploy.sh` を実行しない限り本番には反映されません。
 - `content/wip/` に置いた記事はデプロイしても公開されません。
+- アクセスカウンター値を維持するため、本番 `.env.production` に `ACCESS_COUNTER_STORE_PATH=/opt/blog/shared/access-counter.json` を設定してください。
 
 ## 2. ローカルで表示確認する方法
 - ふだんの確認: `npm run dev`
@@ -44,6 +45,7 @@
 - `content/.meta/published-at.json` と `content/.meta/updated-at.json` は、記事読み込み時に生成/更新されます。
 - そのため、記事追加後に `git push` する前に、少なくとも一度 `npm run preview`（または `npm run build`）を実行してください。
 - これを行わないと、時間メモファイルが作られないまま公開作業に進む可能性があります。
+- アクセスカウンターは本番では `/opt/blog/shared/access-counter.json` への保存を推奨します（`ACCESS_COUNTER_STORE_PATH`）。
 
 ## 3. 公開前チェックとは？
 - コマンド: `npm run publish:secure`
@@ -164,8 +166,9 @@ ticker例:
 
 ## 7. 一覧用サマリー（要約）を手動で指定する
 - 記事冒頭にFrontmatterを追加し、`title` と `summary` を指定できます。
-- `title`: 記事タイトル（一覧と記事ページで使用）
+- `title`: 記事タイトル（一覧・記事ページの`<h1>`・HTML`<title>`で使用）
 - `summary`: 一覧の説明文
+- `summary` は検索結果の説明文（`meta description`）にも利用されます。
 
 例:
 ```md
@@ -174,11 +177,15 @@ title: "ブログ開設記念"
 summary: "この記事の短い説明文をここに書く"
 ---
 
-# 記事タイトル
+## 見出し2（本文はここから開始）
 本文...
 ```
 
-- `title` がない場合は、本文の先頭見出し（`# ...`）から自動生成します。
+- SEO運用ルール:
+  - `title` は必須として運用してください（空にしない）。
+  - 本文では `#` を使わず、見出しは `##` から開始してください。
+  - `#` を書いた場合でも、記事ページでは自動で`h2`に変換されます。
+- `title` がない場合は、互換性のため本文先頭見出し（`# ...`）またはslugから自動生成されますが、公開運用では非推奨です。
 - `summary` がない場合は、本文から自動生成します。
 
 ## 8. フォントプリセット一覧

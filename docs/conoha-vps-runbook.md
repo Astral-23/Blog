@@ -47,9 +47,14 @@ sudo chown -R deploy:deploy /opt/blog /var/log/blog
 1. ローカルから `scripts/deploy.sh` で初回デプロイ
 2. サーバー上で `cp env.production.example .env.production` を作成
 3. 実値を設定（ドメイン、秘密鍵など）
-4. 注意:
+4. アクセスカウンター永続化を設定
+   - `ACCESS_COUNTER_STORE_PATH=/opt/blog/shared/access-counter.json`
+   - `sudo -u deploy mkdir -p /opt/blog/shared`
+   - `sudo -u deploy test -f /opt/blog/shared/access-counter.json || echo '{"version":1,"counters":{}}' | sudo -u deploy tee /opt/blog/shared/access-counter.json >/dev/null`
+5. 注意:
    - `deploy.sh` は `.env.production` を同期対象から除外する
    - 環境変数ファイルはサーバー側で管理し、Git管理しない
+   - `deploy.sh` は `content/.meta/access-counter.json` を同期除外し、`ACCESS_COUNTER_STORE_PATH` 未作成時は初回のみ既存値を移行する
 
 ## 5. systemd サービス設定
 `ops/systemd/blog-app.service` を `/etc/systemd/system/blog-app.service` に配置

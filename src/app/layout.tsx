@@ -3,6 +3,7 @@ import { Noto_Sans_JP, Noto_Serif_JP, Zen_Kaku_Gothic_New } from "next/font/goog
 import "./globals.css";
 import "katex/dist/katex.min.css";
 import { SiteHeader } from "@/components/site-header";
+import { getSiteUrl, resolveCardImage } from "@/lib/metadata";
 import { getSiteSettings, THEME_VARIANT } from "@/lib/site-config";
 
 const notoSans = Noto_Sans_JP({
@@ -23,9 +24,27 @@ const zenKaku = Zen_Kaku_Gothic_New({
 
 export function generateMetadata(): Metadata {
   const settings = getSiteSettings();
+  const siteUrl = getSiteUrl();
+  const defaultImage = resolveCardImage(null);
   return {
     title: settings.title,
     description: settings.description,
+    metadataBase: new URL(siteUrl),
+    openGraph: {
+      title: settings.title,
+      description: settings.description,
+      url: siteUrl,
+      siteName: settings.title,
+      locale: "ja_JP",
+      type: "website",
+      images: [{ url: defaultImage, width: 1200, height: 630 }],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: settings.title,
+      description: settings.description,
+      images: [defaultImage],
+    },
   };
 }
 
