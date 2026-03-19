@@ -148,6 +148,7 @@ ticker例:
 - `speed` は `slow` / `normal` / `fast` も使えます。
 - 新しい埋め込み記法は `<md-embed ...>` です。
   - 例: 最新記事 `<md-embed type="latestPosts" source="all" count="5"></md-embed>`
+  - 例: カウンター数字 `<md-embed type="counter"></md-embed>`
 
 ### 埋め込み（embed）の拡張ルール
 - 記事側は `<md-embed type="<name>" ...></md-embed>` を追加するだけで使えます。

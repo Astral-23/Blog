@@ -251,6 +251,40 @@ a {
   margin-bottom: 0.6rem;
 }
 
+.retro-counter-inline {
+  display: inline;
+  font-variant-numeric: tabular-nums;
+}
+
+.retro-counter-inline-digits {
+  display: inline-block;
+  min-width: 7.8ch;
+  padding: 0.06rem 0.34rem 0.08rem;
+  background: #000;
+  color: #fff;
+  font-family: "MS PGothic", "Osaka", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-size: 0.92em;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-align: center;
+  vertical-align: baseline;
+  line-height: 1.2;
+}
+
+.retro-counter-inline-error {
+  display: inline-block;
+  padding: 0.06rem 0.34rem 0.08rem;
+  background: #000;
+  color: #fff;
+  font-family: "MS PGothic", "Osaka", "SFMono-Regular", Menlo, Consolas, monospace;
+  font-weight: 700;
+}
+
+.home-counter-line {
+  text-align: center;
+  margin: 0.4rem 0 1rem;
+}
+
 .markdown-body {
   font-size: 1.05rem;
 }

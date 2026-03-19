@@ -51,7 +51,17 @@ const sanitizeSchema = {
       "className",
     ],
     source: [...((defaultSchema.attributes?.source as unknown[]) ?? []), "src", "type"],
-    "md-embed": ["type", "count", "source", "text", "speed", "color", "layout"],
+    "md-embed": [
+      "type",
+      "count",
+      "source",
+      "text",
+      "speed",
+      "color",
+      "layout",
+      "counterkey",
+      "digits",
+    ],
   },
 };
 
@@ -168,19 +178,28 @@ export function MarkdownContent({ source }: MarkdownContentProps) {
   const components = {
     "md-embed": ({ ...props }) => {
       const rawProps = props as Record<string, unknown>;
-      const type = typeof rawProps.type === "string" ? rawProps.type : "";
+      const type = typeof rawProps.type === "string" ? rawProps.type.trim() : "";
       if (!type) {
         return <p className="embed-error">Embed type is required.</p>;
       }
 
       const attrs: Record<string, string> = {};
       for (const [key, value] of Object.entries(rawProps)) {
-        if (key === "type" || key === "node" || key === "children") {
+        if (
+          key === "type" ||
+          key === "counterkey" ||
+          key === "node" ||
+          key === "children" ||
+          key === "key"
+        ) {
           continue;
         }
         if (typeof value === "string" && value.trim().length > 0) {
           attrs[key] = value.trim();
         }
+      }
+      if (typeof rawProps.counterkey === "string" && rawProps.counterkey.trim().length > 0) {
+        attrs.counterKey = rawProps.counterkey.trim();
       }
 
       return renderEmbed({ type, attrs });

@@ -4,6 +4,7 @@ import { getPostsBySection, type Post, type Section } from "@/lib/content";
 import { PostCardList } from "@/components/post-card-list";
 import type { EmbedPayload } from "@/lib/embeds/types";
 import { compareIsoDesc } from "@/lib/time";
+import { AccessCounterDigits } from "@/components/access-counter";
 
 type EmbedRenderer = (attrs: Record<string, string>) => ReactNode;
 
@@ -90,9 +91,16 @@ function renderTicker(attrs: Record<string, string>): ReactNode {
   );
 }
 
+function renderCounter(attrs: Record<string, string>): ReactNode {
+  const key = attrs.counterKey ?? "home";
+  const digits = parseIntWithBounds(attrs.digits, 7, 1, 12);
+  return <AccessCounterDigits counterKey={key} digits={digits} />;
+}
+
 const EMBED_RENDERERS: Record<string, EmbedRenderer> = {
   latestPosts: renderLatestPosts,
   ticker: renderTicker,
+  counter: renderCounter,
 };
 
 export function renderEmbed(payload: EmbedPayload): ReactNode {

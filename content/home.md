@@ -1,4 +1,7 @@
 
+<div class="home-counter-line">
+あなたは <md-embed type="counter"></md-embed> 人目の訪問者です。
+</div>
 
 
 
@@ -33,3 +36,6 @@
 [Github](https://github.com/Astral-23)  
 
 [X](https://x.com/inuki_fuko_no_1)...人に読まれる事を想定していない文章を書きます。
+
+
+---

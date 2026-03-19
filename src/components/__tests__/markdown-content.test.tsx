@@ -1,6 +1,6 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownContent } from "@/components/markdown-content";
 
 const renderEmbedMock = vi.fn(() => <div data-testid="embed-result">ok</div>);
@@ -10,6 +10,10 @@ vi.mock("@/components/embeds/embed-registry", () => ({
 }));
 
 describe("MarkdownContent", () => {
+  beforeEach(() => {
+    renderEmbedMock.mockClear();
+  });
+
   it("renders md-embed via embed registry", () => {
     render(
       <MarkdownContent
@@ -21,6 +25,16 @@ describe("MarkdownContent", () => {
     expect(renderEmbedMock).toHaveBeenCalledWith({
       type: "latestPosts",
       attrs: { source: "all", count: "3" },
+    });
+  });
+
+  it("renders counter embed by md-embed type", () => {
+    render(<MarkdownContent source={'あなたは<md-embed type="counter"></md-embed>人目です'} />);
+
+    expect(screen.getByTestId("embed-result")).toBeInTheDocument();
+    expect(renderEmbedMock).toHaveBeenLastCalledWith({
+      type: "counter",
+      attrs: {},
     });
   });
 
