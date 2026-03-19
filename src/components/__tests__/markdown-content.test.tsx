@@ -38,6 +38,19 @@ describe("MarkdownContent", () => {
     });
   });
 
+  it("passes text children to text embed", () => {
+    render(<MarkdownContent source={'<md-embed type="text" position="center">中央寄せテキスト</md-embed>'} />);
+
+    expect(screen.getByTestId("embed-result")).toBeInTheDocument();
+    expect(renderEmbedMock).toHaveBeenLastCalledWith({
+      type: "text",
+      attrs: {
+        position: "center",
+        text: "中央寄せテキスト",
+      },
+    });
+  });
+
   it("blocks javascript links", () => {
     render(<MarkdownContent source={'[danger](javascript:alert("x"))'} />);
     expect(screen.queryByRole("link")).not.toBeInTheDocument();

@@ -151,6 +151,12 @@ ticker例:
 - 新しい埋め込み記法は `<md-embed ...>` です。
   - 例: 最新記事 `<md-embed type="latestPosts" source="all" count="5"></md-embed>`
   - 例: カウンター数字 `<md-embed type="counter"></md-embed>`
+  - 例: テキスト装飾 `<md-embed type="text" position="center" size="lg" color="accent">見出しテキスト</md-embed>`
+
+`type="text"` の主な属性:
+- `position`: `left` / `center` / `right`
+- `size`: `xs` / `sm` / `md` / `lg` / `xl` / `2xl`、または `1.2rem` など
+- `color`: `text` / `muted` / `accent` / `white` / `black` / `#hex` / `rgb(...)`
 
 ### 埋め込み（embed）の拡張ルール
 - 記事側は `<md-embed type="<name>" ...></md-embed>` を追加するだけで使えます。

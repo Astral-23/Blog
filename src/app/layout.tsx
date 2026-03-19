@@ -9,17 +9,20 @@ import { getSiteSettings, THEME_VARIANT } from "@/lib/site-config";
 const notoSans = Noto_Sans_JP({
   variable: "--font-noto-sans",
   subsets: ["latin"],
+  preload: false,
 });
 
 const notoSerif = Noto_Serif_JP({
   variable: "--font-noto-serif",
   subsets: ["latin"],
+  preload: false,
 });
 
 const zenKaku = Zen_Kaku_Gothic_New({
   weight: ["300", "400", "500", "700"],
   variable: "--font-zen-kaku",
   subsets: ["latin"],
+  preload: false,
 });
 
 export function generateMetadata(): Metadata {

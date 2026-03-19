@@ -490,6 +490,22 @@ a {
   color: var(--muted);
 }
 
+.embed-styled-text {
+  margin: 1rem 0;
+}
+
+.embed-styled-text-left {
+  text-align: left;
+}
+
+.embed-styled-text-center {
+  text-align: center;
+}
+
+.embed-styled-text-right {
+  text-align: right;
+}
+
 .ticker {
   position: relative;
   margin: 1.2rem 0;

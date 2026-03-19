@@ -98,4 +98,22 @@ describe("renderEmbed", () => {
     render(<>{renderEmbed({ type: "unknown", attrs: {} })}</>);
     expect(screen.getByText("Unknown embed type: unknown")).toBeInTheDocument();
   });
+
+  it("renders text embed with position and size", () => {
+    render(<>{renderEmbed({ type: "text", attrs: { text: "hello", position: "center", size: "lg" } })}</>);
+    const el = screen.getByText("hello");
+    expect(el).toHaveClass("embed-styled-text");
+    expect(el).toHaveClass("embed-styled-text-center");
+    expect(el).toHaveStyle({ fontSize: "1.25rem" });
+  });
+
+  it("supports numeric size for text embed", () => {
+    render(<>{renderEmbed({ type: "text", attrs: { text: "hello", size: "1.4" } })}</>);
+    expect(screen.getByText("hello")).toHaveStyle({ fontSize: "1.4rem" });
+  });
+
+  it("supports color for text embed", () => {
+    render(<>{renderEmbed({ type: "text", attrs: { text: "hello", color: "#60a136" } })}</>);
+    expect(screen.getByText("hello")).toHaveStyle({ color: "rgb(96, 161, 54)" });
+  });
 });

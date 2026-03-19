@@ -57,6 +57,8 @@ const sanitizeSchema = {
       "count",
       "source",
       "text",
+      "size",
+      "position",
       "speed",
       "color",
       "layout",
@@ -65,6 +67,25 @@ const sanitizeSchema = {
     ],
   },
 };
+
+function extractTextContent(node: unknown): string {
+  if (typeof node === "string" || typeof node === "number") {
+    return String(node);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map((child) => extractTextContent(child)).join("");
+  }
+
+  if (node && typeof node === "object") {
+    const maybe = node as { props?: { children?: unknown } };
+    if (maybe.props && "children" in maybe.props) {
+      return extractTextContent(maybe.props.children);
+    }
+  }
+
+  return "";
+}
 
 function mapAssetUrl(url?: string): string {
   if (!url) {
@@ -201,6 +222,12 @@ export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentPro
       }
       if (typeof rawProps.counterkey === "string" && rawProps.counterkey.trim().length > 0) {
         attrs.counterKey = rawProps.counterkey.trim();
+      }
+      if (!attrs.text) {
+        const inlineText = extractTextContent(rawProps.children).trim();
+        if (inlineText.length > 0) {
+          attrs.text = inlineText;
+        }
       }
 
       return renderEmbed({ type, attrs });

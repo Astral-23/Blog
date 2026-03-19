@@ -5,10 +5,13 @@
 </div>
 
 
+<md-embed type="text" position ="center" size="3rem" color="#4ca014">
+Hutaro Blog へようこそ！
+</md-embed>
 
 ![fuko](assets/fuko_top.jpg "caption=トレース伊吹風子。かわえぇ〜; width=100%; voices=ほぁぁ...|はぁぁぁ...|はぁ、はぁ、...|はぁ...|はぁっ...|ほぁ...")
 
-個人が運営するブログ。人に読まれる事を想定した文章を書きます。
+個人が運営するブログです。人に読まれる事を想定した文章を書きます。
 
 
 <br>

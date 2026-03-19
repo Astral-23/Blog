@@ -8,6 +8,15 @@ import { AccessCounterDigits } from "@/components/access-counter";
 
 type EmbedRenderer = (attrs: Record<string, string>) => ReactNode;
 
+const SIZE_PRESETS: Record<string, string> = {
+  xs: "0.75rem",
+  sm: "0.875rem",
+  md: "1rem",
+  lg: "1.25rem",
+  xl: "1.5rem",
+  "2xl": "1.875rem",
+};
+
 function parseIntWithBounds(raw: string | undefined, fallback: number, min: number, max: number): number {
   if (!raw) {
     return fallback;
@@ -97,10 +106,99 @@ function renderCounter(attrs: Record<string, string>): ReactNode {
   return <AccessCounterDigits counterKey={key} digits={digits} />;
 }
 
+function resolveTextPosition(raw: string | undefined): "left" | "center" | "right" {
+  if (raw === "center" || raw === "right" || raw === "left") {
+    return raw;
+  }
+  return "left";
+}
+
+function resolveTextSize(raw: string | undefined): string | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  if (SIZE_PRESETS[raw]) {
+    return SIZE_PRESETS[raw];
+  }
+
+  if (/^\d+(\.\d+)?$/.test(raw)) {
+    return `${raw}rem`;
+  }
+
+  if (/^\d+(\.\d+)?(px|rem|em|%)$/.test(raw)) {
+    return raw;
+  }
+
+  return undefined;
+}
+
+function resolveTextColor(raw: string | undefined): string | undefined {
+  if (!raw) {
+    return undefined;
+  }
+
+  if (raw === "text") {
+    return "var(--text)";
+  }
+  if (raw === "muted") {
+    return "var(--muted)";
+  }
+  if (raw === "accent") {
+    return "var(--accent)";
+  }
+  if (raw === "white" || raw === "black") {
+    return raw;
+  }
+
+  if (/^#[0-9a-fA-F]{3,8}$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^(rgb|rgba|hsl|hsla)\([^)]+\)$/.test(raw)) {
+    return raw;
+  }
+
+  if (/^[a-zA-Z]+$/.test(raw)) {
+    return raw;
+  }
+
+  return undefined;
+}
+
+function renderStyledText(attrs: Record<string, string>): ReactNode {
+  const text = attrs.text?.trim() ?? "";
+  if (!text) {
+    return <p className="embed-error">Text embed requires text content.</p>;
+  }
+
+  const position = resolveTextPosition(attrs.position);
+  const fontSize = resolveTextSize(attrs.size);
+  const color = resolveTextColor(attrs.color);
+  const style: Record<string, string> = {};
+  if (fontSize) {
+    style.fontSize = fontSize;
+  }
+  if (color) {
+    style.color = color;
+  }
+
+  return (
+    <p
+      className={`embed-styled-text embed-styled-text-${position}`}
+      style={Object.keys(style).length > 0 ? style : undefined}
+    >
+      {text}
+    </p>
+  );
+}
+
 const EMBED_RENDERERS: Record<string, EmbedRenderer> = {
   latestPosts: renderLatestPosts,
   ticker: renderTicker,
   counter: renderCounter,
+  text: renderStyledText,
+  styledText: renderStyledText,
 };
 
 export function renderEmbed(payload: EmbedPayload): ReactNode {
