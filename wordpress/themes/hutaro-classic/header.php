@@ -4,6 +4,9 @@
 <head>
   <meta charset="<?php bloginfo('charset'); ?>" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <?php $leaf_icon = get_template_directory_uri() . '/assets/leaf.png'; ?>
+  <link rel="icon" type="image/png" href="<?php echo esc_url($leaf_icon); ?>" />
+  <link rel="apple-touch-icon" href="<?php echo esc_url($leaf_icon); ?>" />
   <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
@@ -15,16 +18,14 @@
       <span style="font-size:0.78em;">4th Edition</span>
     </a>
     <nav aria-label="Global">
-      <ul class="nav-list">
-        <?php
-        $currentPath = (string) wp_parse_url(home_url(add_query_arg([])), PHP_URL_PATH);
-        foreach (hutaro_classic_nav_items() as $item):
-            $itemPath = (string) wp_parse_url($item['href'], PHP_URL_PATH);
-            $isActive = untrailingslashit($currentPath) === untrailingslashit($itemPath);
-        ?>
-          <li><a class="nav-link<?php echo $isActive ? ' is-active' : ''; ?>" href="<?php echo esc_url($item['href']); ?>"><?php echo esc_html($item['label']); ?></a></li>
-        <?php endforeach; ?>
-      </ul>
+      <?php
+      wp_nav_menu([
+          'theme_location' => 'global',
+          'container' => false,
+          'menu_class' => 'nav-list',
+          'fallback_cb' => 'hutaro_classic_nav_fallback',
+      ]);
+      ?>
     </nav>
   </div>
 </header>

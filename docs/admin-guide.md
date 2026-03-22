@@ -5,42 +5,42 @@
 ## 0. 30秒版
 1. 記事を `content/blog/*.md` または `content/blog-tech/*.md` に追加・編集
 2. 必要なら画像を `content/assets/` に追加
-3. 反映: `npm run wp:publish:md`
-4. 確認: `https://hutaroblog.com/`, `https://hutaroblog.com/blog/`, `https://hutaroblog.com/api/health`
+3. `npm run wp:publish:md` を実行
+4. `BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh` で確認
 
-`.md` が正本です。WordPress管理画面で本文を直接編集しない運用にしてください。
+重要:
+- 正本は `.md`（Git管理）です。
+- WordPress管理画面で本文を直接編集しない運用にしてください。
 
-## 1. 前提（初回だけ）
-`wp:publish:md` 実行時に次の環境変数が必要です。
-
+## 1. 初回準備
 ```bash
-export WP_BASE_URL="https://hutaroblog.com"
-export WP_USERNAME="hutaro_admin"
-export WP_APP_PASSWORD="<WordPress Application Password>"
+cp .env.wp.example .env.wp.local
 ```
 
-確認:
-
-```bash
-echo "$WP_BASE_URL"
-echo "$WP_USERNAME"
+`.env.wp.local` を編集:
+```dotenv
+WP_BASE_URL=https://hutaroblog.com
+WP_USERNAME=hutaro_admin
+WP_APP_PASSWORD=<WordPress Application Password>
 ```
+
+ナビゲーション編集:
+- `外観 > メニュー` で `Global Navigation` を編集すると、ヘッダーリンクが反映されます。
+- 未設定時は `home / blog / blog(tech)` のフォールバックを自動表示します。
 
 ## 2. 日常の公開手順（Markdown -> WordPress）
-
 ```bash
 npm run wp:publish:md
 ```
 
-内部では次を順番に実行します。
+内部処理:
 1. `npm run wp:export`
 2. `npm run wp:import:rest`
 
 生成ファイル:
 - `migration/wordpress/payload.json`
 
-## 3. 手動実行したい場合
-
+## 3. 手動実行（必要時のみ）
 ```bash
 npm run wp:export
 WP_BASE_URL=https://hutaroblog.com \
@@ -49,7 +49,7 @@ WP_APP_PASSWORD='<app-password>' \
 npm run wp:import:rest
 ```
 
-## 4. 記事の書き方（必須項目）
+## 4. 記事の書き方
 
 ```md
 ---
@@ -78,26 +78,23 @@ WordPress側で互換変換されます。
 ```
 
 ## 6. 公開後チェック
-
 ```bash
 BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh
 ```
 
 期待:
 - `/` 200
-- `/blog` 200
+- `/blog/` 200
 - `/blog/1/` 200（既定）
 - `/api/health` 200 + `{"status":"ok"}`
 - `/api/access-counter?key=home` 200 + `{"total":...}`
 
 ## 7. 失敗時の対応
 1. `npm run wp:publish:md` を再実行（冪等）
-2. 認証エラー時は `WP_USERNAME` / `WP_APP_PASSWORD` を再確認
-3. APIの挙動確認:
-
+2. `.env.wp.local` の3項目を確認
+3. APIの挙動確認
 ```bash
 curl -i https://hutaroblog.com/api/health
 curl -i "https://hutaroblog.com/api/access-counter?key=home"
 ```
-
-4. サーバー障害確認は `docs/wordpress-production-runbook.md` を参照
+4. サーバー障害は `docs/wordpress-production-runbook.md` を参照

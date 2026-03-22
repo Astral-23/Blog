@@ -159,19 +159,59 @@ async function upsertPost(post, categoryId, mediaMap) {
     excerpt: post.excerpt,
     categories: [categoryId],
     date: post.publishedAt,
-    modified: post.updatedAt,
   };
 
   if (featuredId) {
     body.featured_media = featuredId;
   }
 
-  const existing = await wpFetchJson(`/wp-json/wp/v2/posts?slug=${encodeURIComponent(post.slug)}&per_page=100`);
+  const existing = await wpFetchJson(
+    `/wp-json/wp/v2/posts?slug=${encodeURIComponent(post.slug)}&per_page=100&context=edit`,
+  );
   const hit = Array.isArray(existing)
     ? existing.find((item) => Array.isArray(item.categories) && item.categories.includes(categoryId))
     : null;
 
+  const normalize = (value) => String(value ?? "").trim();
+  const toEpochOrNull = (value) => {
+    const ms = Date.parse(String(value ?? ""));
+    return Number.isNaN(ms) ? null : ms;
+  };
+  const toGmtEpochOrNull = (value) => {
+    const raw = normalize(value);
+    if (!raw) return null;
+    const ms = Date.parse(`${raw}Z`);
+    return Number.isNaN(ms) ? null : ms;
+  };
+  const isIsoWithTimezone = (value) => /(?:Z|[+-]\d{2}:\d{2})$/.test(normalize(value));
+  const sameSecond = (a, b) => a !== null && b !== null && Math.floor(a / 1000) === Math.floor(b / 1000);
+
   if (hit?.id) {
+    const existingTitle = normalize(hit?.title?.raw ?? hit?.title?.rendered);
+    const existingContent = normalize(hit?.content?.raw ?? hit?.content?.rendered);
+    const existingExcerpt = normalize(hit?.excerpt?.raw ?? hit?.excerpt?.rendered);
+    const existingFeatured = Number(hit?.featured_media ?? 0);
+    const nextFeatured = Number(body.featured_media ?? 0);
+    const existingDateLocal = toEpochOrNull(hit?.date);
+    const existingDateGmt = toGmtEpochOrNull(hit?.date_gmt);
+    const nextDateLocal = toEpochOrNull(body.date);
+    const nextDateGmt = isIsoWithTimezone(body.date) ? toEpochOrNull(body.date) : toGmtEpochOrNull(body.date);
+    const sameDate =
+      sameSecond(existingDateLocal, nextDateLocal) ||
+      sameSecond(existingDateGmt, nextDateGmt) ||
+      normalize(hit?.date) === normalize(body.date);
+
+    const unchanged =
+      existingTitle === normalize(body.title) &&
+      existingContent === normalize(body.content) &&
+      existingExcerpt === normalize(body.excerpt) &&
+      existingFeatured === nextFeatured &&
+      sameDate;
+
+    if (unchanged) {
+      return { ...hit, __skipped: true };
+    }
+
     return wpFetchJson(`/wp-json/wp/v2/posts/${hit.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -222,6 +262,10 @@ async function main() {
   for (const post of payload.posts ?? []) {
     const categoryId = post.section === "blog-tech" ? techCategoryId : blogCategoryId;
     const saved = await upsertPost(post, categoryId, mediaMap);
+    if (saved?.__skipped) {
+      console.log(`[wp-import-rest] skipped unchanged post ${post.section}/${post.slug} id=${saved.id}`);
+      continue;
+    }
     console.log(`[wp-import-rest] upserted post ${post.section}/${post.slug} id=${saved.id}`);
   }
 

@@ -2,6 +2,14 @@
 set -euo pipefail
 
 PAYLOAD_PATH="${PAYLOAD_PATH:-$(pwd)/migration/wordpress/payload.json}"
+WP_ENV_FILE="${WP_ENV_FILE:-.env.wp.local}"
+
+if [[ -f "$WP_ENV_FILE" ]]; then
+  set -a
+  # shellcheck disable=SC1090
+  source "$WP_ENV_FILE"
+  set +a
+fi
 
 if [[ -z "${WP_BASE_URL:-}" || -z "${WP_USERNAME:-}" || -z "${WP_APP_PASSWORD:-}" ]]; then
   cat <<'EOF'
@@ -16,6 +24,11 @@ Example:
   WP_USERNAME=hutaro_admin \
   WP_APP_PASSWORD='xxxx xxxx xxxx xxxx xxxx xxxx' \
   npm run wp:publish:md
+
+Or create .env.wp.local:
+  WP_BASE_URL=https://hutaroblog.com
+  WP_USERNAME=hutaro_admin
+  WP_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
 EOF
   exit 1
 fi

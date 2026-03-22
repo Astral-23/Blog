@@ -18,6 +18,10 @@ WordPress移行時の互換レイヤーです。
 - 補助フィルタ
   - `<md-embed ...>` の shortcode 変換
   - 外部リンクへ `target="_blank" rel="noreferrer noopener"` 自動付与
+- フロント資産
+  - `assets/hutaro-bridge.css`
+  - `assets/hutaro-bridge.js`
+  - `wp_enqueue_style/script` で読込
 
 ## インストール
 

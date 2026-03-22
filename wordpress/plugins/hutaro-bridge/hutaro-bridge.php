@@ -31,262 +31,28 @@ final class HutaroBridge {
     }
 
     public static function enqueue_assets(): void {
-        $css = <<<'CSS'
-.hutaro-embed-text { margin: 1rem 0; }
-.hutaro-embed-text.align-left { text-align: left; }
-.hutaro-embed-text.align-center { text-align: center; }
-.hutaro-embed-text.align-right { text-align: right; }
+        $base_dir = plugin_dir_path(__FILE__) . 'assets/';
+        $base_url = plugin_dir_url(__FILE__) . 'assets/';
 
-.hutaro-embed-counter {
-  display: inline-block;
-  min-width: 7.8ch;
-  padding: 0.06rem 0.34rem 0.08rem;
-  background: #000;
-  color: #fff;
-  font-family: "MS PGothic", "Osaka", Menlo, Consolas, monospace;
-  font-size: 0.92em;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  text-align: center;
-  line-height: 1.2;
-}
+        $css_path = $base_dir . 'hutaro-bridge.css';
+        $js_path = $base_dir . 'hutaro-bridge.js';
 
-.hutaro-embed-latest-posts { margin: 1.2rem 0; }
-.hutaro-embed-latest-posts ul { margin: 0; padding: 0; }
-.hutaro-embed-latest-posts li { margin: 0; }
+        $css_ver = file_exists($css_path) ? (string) filemtime($css_path) : '0.1.0';
+        $js_ver = file_exists($js_path) ? (string) filemtime($js_path) : '0.1.0';
 
-.hutaro-image {
-  margin: 1rem 0;
-}
-.hutaro-image img {
-  display: block;
-  max-width: 100%;
-  height: auto;
-}
-.hutaro-image figcaption {
-  margin-top: 0.5rem;
-  font-size: 0.92rem;
-  color: #666;
-  text-align: center;
-}
-.hutaro-image[data-voices] {
-  position: relative;
-}
-.hutaro-voice-layer {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  overflow: hidden;
-}
-.hutaro-voice-burst {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  writing-mode: vertical-rl;
-  text-orientation: upright;
-  line-height: 1.05;
-  font-size: clamp(1rem, 0.9rem + 1vw, 1.4rem);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  color: #547443;
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
-  opacity: 0;
-  animation: hutaro-voice-burst 3000ms ease forwards;
-}
-
-.hutaro-ticker {
-  position: relative;
-  margin: 1.2rem 0;
-  overflow: hidden;
-  white-space: nowrap;
-}
-.hutaro-ticker-track {
-  display: inline-block;
-  white-space: nowrap;
-  min-width: max-content;
-  animation: hutaro-ticker-bounce 6s linear infinite alternate;
-}
-.hutaro-ticker-static .hutaro-ticker-track {
-  animation: none;
-  min-width: 0;
-}
-.hutaro-ticker-static {
-  text-align: center;
-}
-.hutaro-ticker-text {
-  display: inline-block;
-  font-size: clamp(1rem, 0.8rem + 1.3vw, 1.4rem);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  padding: 0.1rem 0.3rem;
-}
-.hutaro-ticker-color-rainbow .hutaro-ticker-text {
-  background: linear-gradient(90deg, #ff3b3b, #ff9f1a, #ffe66d, #2ec4b6, #4d96ff, #b07cff, #ff3b3b);
-  background-size: 240% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: hutaro-rainbow 4s linear infinite;
-}
-.hutaro-ticker-color-white .hutaro-ticker-text { color: #fff; }
-.hutaro-ticker-color-accent .hutaro-ticker-text { color: var(--wp--preset--color--accent, #0f766e); }
-
-@keyframes hutaro-ticker-bounce {
-  0% { transform: translateX(0); }
-  100% { transform: translateX(calc(100vw - 100%)); }
-}
-
-@keyframes hutaro-rainbow {
-  0% { background-position: 0% 50%; }
-  100% { background-position: 200% 50%; }
-}
-
-@keyframes hutaro-voice-burst {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% + 14px)) scale(0.96);
-  }
-  12% {
-    opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
-  }
-  70% {
-    opacity: 1;
-    transform: translate(-50%, calc(-50% - 4px)) scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: translate(-50%, calc(-50% - 8px)) scale(1.02);
-  }
-}
-CSS;
-
-        $js = <<<'JS'
-(function () {
-  function resolveCountdown(text) {
-    return text.replace(/\{\{countdown:(\d{1,2})-(\d{1,2})\}\}/g, function (_, m, d) {
-      var month = parseInt(m, 10);
-      var day = parseInt(d, 10);
-      if (!month || !day || month < 1 || month > 12 || day < 1 || day > 31) {
-        return '0';
-      }
-
-      var now = new Date();
-      var today = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-      var year = now.getUTCFullYear();
-      var target = new Date(Date.UTC(year, month - 1, day));
-      if (target < today) {
-        target = new Date(Date.UTC(year + 1, month - 1, day));
-      }
-      var diff = Math.floor((target - today) / (24 * 60 * 60 * 1000));
-      return String(diff);
-    });
-  }
-
-  function bootTicker(el) {
-    var rawText = el.getAttribute('data-text') || '';
-    var text = resolveCountdown(rawText);
-    var textNode = el.querySelector('.hutaro-ticker-text');
-    if (textNode) {
-      textNode.textContent = text;
-    }
-
-    var duration = parseFloat(el.getAttribute('data-duration-sec') || '6');
-    var track = el.querySelector('.hutaro-ticker-track');
-    if (track && Number.isFinite(duration) && duration > 0) {
-      track.style.animationDuration = duration + 's';
-    }
-
-    var color = (el.getAttribute('data-color') || '').trim();
-    if (color && color.charAt(0) === '#') {
-      el.style.setProperty('--hutaro-ticker-solid-color', color);
-      if (textNode) {
-        textNode.style.color = color;
-      }
-    }
-  }
-
-  function bootCounter(el) {
-    var key = el.getAttribute('data-key') || 'home';
-    var digits = parseInt(el.getAttribute('data-digits') || '7', 10);
-    var endpoint = (window.wpApiSettings && window.wpApiSettings.root ? window.wpApiSettings.root : '/wp-json/') + 'hutaro/v1/counter';
-
-    fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key: key })
-    })
-      .then(function (res) { return res.ok ? res.json() : Promise.reject(new Error('counter failed')); })
-      .then(function (payload) {
-        var total = Number(payload.total || 0);
-        var padded = String(Math.max(0, Math.floor(total))).padStart(Math.max(1, digits), '0');
-        el.textContent = padded.replace(/[0-9]/g, function (d) {
-          return String.fromCharCode(d.charCodeAt(0) + 0xFEE0);
-        });
-      })
-      .catch(function () {
-        el.textContent = '----';
-      });
-  }
-
-  document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('[data-hutaro-ticker="1"]').forEach(bootTicker);
-    document.querySelectorAll('[data-hutaro-counter="1"]').forEach(bootCounter);
-
-    document.querySelectorAll('figure.hutaro-image[data-voices]').forEach(function (figure) {
-      var voicesRaw = figure.getAttribute('data-voices') || '';
-      var voices = voicesRaw.split('|').map(function (v) { return v.trim(); }).filter(Boolean);
-      if (!voices.length) {
-        return;
-      }
-
-      var img = figure.querySelector('img');
-      if (!img) {
-        return;
-      }
-
-      var layer = document.createElement('span');
-      layer.className = 'hutaro-voice-layer';
-      figure.appendChild(layer);
-
-      var index = 0;
-      var spawn = function () {
-        var burst = document.createElement('span');
-        burst.className = 'hutaro-voice-burst';
-        burst.textContent = voices[index % voices.length];
-        index += 1;
-        burst.style.top = (14 + Math.random() * 72) + '%';
-        burst.style.left = (10 + Math.random() * 76) + '%';
-        layer.appendChild(burst);
-        window.setTimeout(function () {
-          if (burst.parentNode) {
-            burst.parentNode.removeChild(burst);
-          }
-        }, 3000);
-      };
-
-      img.style.cursor = 'pointer';
-      img.addEventListener('click', spawn);
-      img.addEventListener('keydown', function (event) {
-        if (event.key === 'Enter' || event.key === ' ') {
-          event.preventDefault();
-          spawn();
-        }
-      });
-      img.setAttribute('tabindex', '0');
-      img.setAttribute('role', 'button');
-      img.setAttribute('aria-label', 'セリフ演出を再生');
-    });
-  });
-})();
-JS;
-
-        wp_register_style('hutaro-bridge-inline-style', false);
-        wp_enqueue_style('hutaro-bridge-inline-style');
-        wp_add_inline_style('hutaro-bridge-inline-style', $css);
-
-        wp_register_script('hutaro-bridge-inline-script', false, [], null, true);
-        wp_enqueue_script('hutaro-bridge-inline-script');
-        wp_add_inline_script('hutaro-bridge-inline-script', $js);
+        wp_enqueue_style(
+            'hutaro-bridge-style',
+            $base_url . 'hutaro-bridge.css',
+            [],
+            $css_ver
+        );
+        wp_enqueue_script(
+            'hutaro-bridge-script',
+            $base_url . 'hutaro-bridge.js',
+            [],
+            $js_ver,
+            true
+        );
     }
 
     public static function render_text_shortcode(array $atts, string $content = ''): string {

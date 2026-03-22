@@ -87,6 +87,13 @@ a { color: inherit; text-decoration: none; }
   background: color-mix(in oklab, var(--surface) 70%, var(--accent) 7%);
 }
 
+.nav-list .current-menu-item > .nav-link,
+.nav-list .current-menu-ancestor > .nav-link {
+  color: var(--text);
+  border-color: var(--line);
+  background: color-mix(in oklab, var(--surface) 70%, var(--accent) 7%);
+}
+
 .site-main {
   min-height: calc(100dvh - 64px);
 }
@@ -279,6 +286,31 @@ a { color: inherit; text-decoration: none; }
   color: var(--muted);
   font-size: 0.9rem;
   margin-bottom: 0.6rem;
+}
+
+.pagination-wrap {
+  margin-top: 1rem;
+}
+
+.pagination-wrap .page-numbers {
+  display: flex;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pagination-wrap .page-numbers a,
+.pagination-wrap .page-numbers span {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 0.3rem 0.72rem;
+  text-decoration: none;
+}
+
+.pagination-wrap .page-numbers .current {
+  background: color-mix(in oklab, var(--surface) 70%, var(--accent) 7%);
+  color: var(--text);
 }
 
 @media (max-width: 720px) {

@@ -15,15 +15,17 @@ if ($slug === 'blog-tech') {
   <h1 class="page-title"><?php echo esc_html($title); ?></h1>
   <?php if ($lead !== ''): ?><p class="page-lead"><?php echo esc_html($lead); ?></p><?php endif; ?>
   <?php
-  $q = new WP_Query([
-      'post_type' => 'post',
-      'post_status' => 'publish',
-      'category_name' => $slug,
-      'posts_per_page' => 100,
-      'orderby' => 'date',
-      'order' => 'DESC',
-  ]);
-  echo hutaro_classic_render_post_cards($q);
+  global $wp_query;
+  if ($wp_query instanceof WP_Query) {
+      echo hutaro_classic_render_post_cards($wp_query);
+      echo '<nav class="pagination-wrap" aria-label="Pagination">';
+      echo paginate_links([
+          'prev_text' => 'Prev',
+          'next_text' => 'Next',
+          'type' => 'list',
+      ]);
+      echo '</nav>';
+  }
   ?>
 </section>
 <?php get_footer();

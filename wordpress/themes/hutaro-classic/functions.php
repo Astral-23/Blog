@@ -6,7 +6,11 @@ if (!defined('ABSPATH')) {
 function hutaro_classic_setup(): void {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
+    add_theme_support('menus');
     add_theme_support('html5', ['search-form', 'gallery', 'caption', 'style', 'script']);
+    register_nav_menus([
+        'global' => 'Global Navigation',
+    ]);
 }
 add_action('after_setup_theme', 'hutaro_classic_setup');
 
@@ -23,6 +27,14 @@ function hutaro_classic_nav_items(): array {
         ['href' => home_url('/blog/'), 'label' => 'blog'],
         ['href' => home_url('/blog-tech/'), 'label' => 'blog(tech)'],
     ];
+}
+
+function hutaro_classic_nav_fallback(): void {
+    echo '<ul class="nav-list">';
+    foreach (hutaro_classic_nav_items() as $item) {
+        echo '<li class="menu-item"><a class="nav-link" href="' . esc_url($item['href']) . '">' . esc_html($item['label']) . '</a></li>';
+    }
+    echo '</ul>';
 }
 
 function hutaro_classic_render_post_cards(WP_Query $query): string {
@@ -56,3 +68,33 @@ function hutaro_classic_render_post_cards(WP_Query $query): string {
 
     return (string) ob_get_clean();
 }
+
+function hutaro_classic_tune_archive_queries(WP_Query $query): void {
+    if (is_admin() || !$query->is_main_query()) {
+        return;
+    }
+
+    if ($query->is_category(['blog', 'blog-tech']) || $query->is_home()) {
+        $query->set('post_type', 'post');
+        $query->set('post_status', 'publish');
+        $query->set('posts_per_page', 12);
+        $query->set('orderby', 'date');
+        $query->set('order', 'DESC');
+    }
+}
+add_action('pre_get_posts', 'hutaro_classic_tune_archive_queries');
+
+function hutaro_classic_nav_link_classes(array $atts, WP_Post $menu_item, stdClass $args): array {
+    if (!isset($args->theme_location) || $args->theme_location !== 'global') {
+        return $atts;
+    }
+
+    $classes = [];
+    if (isset($atts['class']) && is_string($atts['class']) && $atts['class'] !== '') {
+        $classes = preg_split('/\s+/', $atts['class']) ?: [];
+    }
+    $classes[] = 'nav-link';
+    $atts['class'] = implode(' ', array_unique(array_filter($classes)));
+    return $atts;
+}
+add_filter('nav_menu_link_attributes', 'hutaro_classic_nav_link_classes', 10, 3);
