@@ -3,6 +3,7 @@ set -euo pipefail
 
 PAYLOAD_PATH="${PAYLOAD_PATH:-$(pwd)/migration/wordpress/payload.json}"
 WP_ENV_FILE="${WP_ENV_FILE:-.env.wp.local}"
+SKIP_ASSET_OPTIMIZE="${SKIP_ASSET_OPTIMIZE:-0}"
 
 if [[ -f "$WP_ENV_FILE" ]]; then
   set -a
@@ -31,6 +32,13 @@ Or create .env.wp.local:
   WP_APP_PASSWORD=xxxx xxxx xxxx xxxx xxxx xxxx
 EOF
   exit 1
+fi
+
+if [[ "$SKIP_ASSET_OPTIMIZE" != "1" ]]; then
+  echo "[wp:publish:md] optimize assets"
+  npm run assets:optimize
+else
+  echo "[wp:publish:md] skip asset optimize (SKIP_ASSET_OPTIMIZE=1)"
 fi
 
 echo "[wp:publish:md] export markdown -> payload"

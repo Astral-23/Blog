@@ -72,6 +72,18 @@ export function parseImageMeta(title = "") {
       meta.voices = value;
       continue;
     }
+    if (key === "loading") {
+      meta.loading = value;
+      continue;
+    }
+    if (key === "fetchpriority" || key === "fetch-priority") {
+      meta.fetchPriority = value;
+      continue;
+    }
+    if (key === "decoding") {
+      meta.decoding = value;
+      continue;
+    }
     if (!meta.caption && !key) {
       meta.caption = token;
     }
@@ -115,6 +127,25 @@ function buildStyleFromMeta(meta) {
   return chunks.join("; ");
 }
 
+function buildImageAttrsFromMeta(meta) {
+  const attrs = [];
+  const loading = String(meta.loading || "").toLowerCase();
+  const fetchPriority = String(meta.fetchPriority || "").toLowerCase();
+  const decoding = String(meta.decoding || "").toLowerCase();
+
+  if (loading === "eager" || loading === "lazy") {
+    attrs.push(`loading="${loading}"`);
+  }
+  if (fetchPriority === "high" || fetchPriority === "low" || fetchPriority === "auto") {
+    attrs.push(`fetchpriority="${fetchPriority}"`);
+  }
+  if (decoding === "async" || decoding === "sync" || decoding === "auto") {
+    attrs.push(`decoding="${decoding}"`);
+  }
+
+  return attrs.join(" ");
+}
+
 function replaceImagesAndLinks(text) {
   const placeholders = [];
   let out = text;
@@ -136,7 +167,9 @@ function replaceImagesAndLinks(text) {
     const meta = parseImageMeta(title || "");
     const style = buildStyleFromMeta(meta);
     const attrStyle = style ? ` style="${escapeHtml(style)}"` : "";
-    const img = `<img src="${escapeHtml(mapped)}" alt="${escapeHtml(alt)}"${attrStyle} />`;
+    const extraAttrs = buildImageAttrsFromMeta(meta);
+    const attrExtras = extraAttrs ? ` ${extraAttrs}` : "";
+    const img = `<img src="${escapeHtml(mapped)}" alt="${escapeHtml(alt)}"${attrExtras}${attrStyle} />`;
 
     if (meta.caption || meta.voices) {
       const attrs = [];

@@ -34,11 +34,17 @@ npm run wp:publish:md
 ```
 
 内部処理:
-1. `npm run wp:export`
-2. `npm run wp:import:rest`
+1. `npm run assets:optimize`（`content/assets` の画像を圧縮・必要時リサイズ）
+2. `npm run wp:export`
+3. `npm run wp:import:rest`
 
 生成ファイル:
 - `migration/wordpress/payload.json`
+
+画像最適化だけスキップしたい場合:
+```bash
+SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md
+```
 
 ## 3. 手動実行（必要時のみ）
 ```bash
@@ -66,6 +72,12 @@ card: "assets/your-card-image.jpg"
 - `title` は必須推奨
 - 見出しは `##` から開始推奨
 - 画像は `assets/...` 参照を使う
+- 先頭の大きい画像は `loading=eager; fetchpriority=high` を使うと体感速度改善に有効
+
+画像メタ例（タイトル文字列で指定）:
+```md
+![hero](assets/hero.jpg "caption=説明; width=100%; loading=eager; fetchpriority=high; decoding=async")
+```
 
 ## 5. 埋め込み（md-embed）
 WordPress側で互換変換されます。

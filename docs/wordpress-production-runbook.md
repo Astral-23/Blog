@@ -5,6 +5,10 @@
 ## 1. 現在状態
 - `https://hutaroblog.com` は WordPress 配信
 - コンテンツ移行（home / blog記事 / assets）完了
+- テーマは WordPress 標準メニュー (`Global Navigation`) と標準ページネーション運用
+- 互換プラグイン `hutaro-bridge` のフロント資産は `assets/*.css,*.js` を `wp_enqueue_*` で配信
+- `hutaro-bridge` は有効化/無効化時に rewrite を自動 flush
+- `hutaro/v1/counter` は REST 引数検証（`key` 必須・形式チェック）を実施
 - 互換エンドポイント有効
   - `/api/health`
   - `/api/access-counter`
@@ -52,6 +56,10 @@ WP_APP_PASSWORD=<app-password>
 npm run wp:publish:md
 BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh
 ```
+
+補足:
+- `npm run wp:publish:md` 実行時に、`content/assets` 画像最適化（`npm run assets:optimize`）が自動実行されます。
+- 緊急時にスキップする場合のみ `SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md` を使います。
 
 ## 6. テーマ/プラグイン更新
 1. ローカルで修正

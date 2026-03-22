@@ -26,6 +26,7 @@
 - Plugin (`hutaro-bridge`):
   - `md-embed` 互換ショートコード
   - 旧API互換 (`/api/health`, `/api/access-counter`)
+  - 旧API互換は内部で WordPress REST (`/wp-json/hutaro/v1/*`) にプロキシ
   - 旧ルート互換 rewrite (`/blog/*`, `/blog-tech/*`)
   - CSS/JSは `assets/` 配下を `wp_enqueue_*` で読込
 - Scripts:
@@ -56,6 +57,10 @@
 1. `npm run wp:export`
 2. `npm run wp:publish:md`
 3. `npm run smoke:prod`
+
+補足:
+- `wp:publish:md` は内部で `assets:optimize` を先に実行します。
+- 最適化を外した検証が必要な場合のみ `SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md` を使用します。
 
 ## 7. 禁止事項
 - WordPress管理画面を正本にする運用。

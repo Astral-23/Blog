@@ -30,6 +30,15 @@ final class HutaroBridge {
         add_filter('upload_mimes', [self::class, 'allow_extra_mimes']);
     }
 
+    public static function on_activation(): void {
+        self::register_legacy_rewrite_rules();
+        flush_rewrite_rules();
+    }
+
+    public static function on_deactivation(): void {
+        flush_rewrite_rules();
+    }
+
     public static function enqueue_assets(): void {
         $base_dir = plugin_dir_path(__FILE__) . 'assets/';
         $base_url = plugin_dir_url(__FILE__) . 'assets/';
@@ -199,24 +208,42 @@ final class HutaroBridge {
         register_rest_route('hutaro/v1', '/health', [
             'methods' => 'GET',
             'permission_callback' => '__return_true',
-            'callback' => function () {
-                return rest_ensure_response([
-                    'status' => 'ok',
-                    'service' => 'blog',
-                    'timestamp' => gmdate('c'),
-                ]);
-            },
+            'callback' => [self::class, 'rest_health'],
         ]);
 
         register_rest_route('hutaro/v1', '/counter', [
             'methods' => 'GET',
             'permission_callback' => '__return_true',
+            'args' => [
+                'key' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => static function ($value) {
+                        return sanitize_text_field((string) $value);
+                    },
+                    'validate_callback' => static function ($value) {
+                        return HutaroBridge::is_valid_counter_key(trim((string) $value));
+                    },
+                ],
+            ],
             'callback' => [self::class, 'rest_counter_get'],
         ]);
 
         register_rest_route('hutaro/v1', '/counter', [
             'methods' => 'POST',
             'permission_callback' => '__return_true',
+            'args' => [
+                'key' => [
+                    'required' => true,
+                    'type' => 'string',
+                    'sanitize_callback' => static function ($value) {
+                        return sanitize_text_field((string) $value);
+                    },
+                    'validate_callback' => static function ($value) {
+                        return HutaroBridge::is_valid_counter_key(trim((string) $value));
+                    },
+                ],
+            ],
             'callback' => [self::class, 'rest_counter_post'],
         ]);
     }
@@ -239,70 +266,21 @@ final class HutaroBridge {
             return;
         }
 
-        nocache_headers();
-        header('Content-Type: application/json; charset=utf-8');
-
-        if ($api === 'health') {
-            status_header(200);
-            echo wp_json_encode([
-                'status' => 'ok',
-                'service' => 'blog',
-                'timestamp' => gmdate('c'),
-            ]);
-            exit;
+        $request = self::build_legacy_rest_request($api);
+        if (!$request instanceof WP_REST_Request) {
+            self::send_legacy_response(new WP_Error('not_found', 'not found', ['status' => 404]));
         }
 
-        if ($api === 'access-counter') {
-            if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-                $key = isset($_GET['key']) ? sanitize_text_field(wp_unslash((string) $_GET['key'])) : '';
-                if (!self::is_valid_counter_key($key)) {
-                    status_header(400);
-                    echo wp_json_encode(['error' => 'invalid key']);
-                    exit;
-                }
-                $entry = self::get_counter_entry($key);
-                status_header(200);
-                echo wp_json_encode([
-                    'key' => $key,
-                    'total' => intval($entry['total']),
-                    'updatedAt' => (string) $entry['updatedAt'],
-                ]);
-                exit;
-            }
+        $response = rest_do_request($request);
+        self::send_legacy_response($response);
+    }
 
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $raw = file_get_contents('php://input');
-                $decoded = json_decode(is_string($raw) ? $raw : '', true);
-                $key = isset($decoded['key']) ? trim((string) $decoded['key']) : '';
-                if (!self::is_valid_counter_key($key)) {
-                    status_header(400);
-                    echo wp_json_encode(['error' => 'invalid key']);
-                    exit;
-                }
-
-                $store = self::get_counter_store();
-                $entry = isset($store[$key]) && is_array($store[$key]) ? $store[$key] : [
-                    'total' => 0,
-                    'updatedAt' => gmdate('c'),
-                ];
-                $entry['total'] = intval($entry['total']) + 1;
-                $entry['updatedAt'] = gmdate('c');
-                $store[$key] = $entry;
-                update_option(self::COUNTER_OPTION_KEY, $store, false);
-
-                status_header(200);
-                echo wp_json_encode([
-                    'key' => $key,
-                    'total' => intval($entry['total']),
-                    'updatedAt' => (string) $entry['updatedAt'],
-                ]);
-                exit;
-            }
-        }
-
-        status_header(404);
-        echo wp_json_encode(['error' => 'not found']);
-        exit;
+    public static function rest_health(?WP_REST_Request $request = null): WP_REST_Response {
+        return new WP_REST_Response([
+            'status' => 'ok',
+            'service' => 'blog',
+            'timestamp' => gmdate('c'),
+        ], 200);
     }
 
     public static function rest_counter_get(WP_REST_Request $request) {
@@ -321,7 +299,7 @@ final class HutaroBridge {
 
     public static function rest_counter_post(WP_REST_Request $request) {
         $body = $request->get_json_params();
-        $key = isset($body['key']) ? trim((string) $body['key']) : '';
+        $key = isset($body['key']) ? trim((string) $body['key']) : trim((string) $request->get_param('key'));
         if (!self::is_valid_counter_key($key)) {
             return new WP_REST_Response(['error' => 'invalid key'], 400);
         }
@@ -345,26 +323,109 @@ final class HutaroBridge {
         ], 200);
     }
 
+    private static function send_legacy_response($response): void {
+        if (is_wp_error($response)) {
+            $status = 500;
+            $error_data = $response->get_error_data();
+            if (is_array($error_data) && isset($error_data['status'])) {
+                $status = intval($error_data['status']);
+            }
+            if ($status < 100 || $status > 599) {
+                $status = 500;
+            }
+            nocache_headers();
+            wp_send_json(['error' => $response->get_error_message()], $status);
+        }
+
+        $normalized = rest_ensure_response($response);
+        if (is_wp_error($normalized)) {
+            self::send_legacy_response($normalized);
+        }
+
+        if ($normalized instanceof WP_HTTP_Response) {
+            nocache_headers();
+            wp_send_json($normalized->get_data(), $normalized->get_status());
+        }
+
+        nocache_headers();
+        wp_send_json(['error' => 'invalid response'], 500);
+    }
+
+    private static function build_legacy_rest_request(string $api): ?WP_REST_Request {
+        $method = isset($_SERVER['REQUEST_METHOD']) ? strtoupper((string) $_SERVER['REQUEST_METHOD']) : 'GET';
+
+        if ($api === 'health') {
+            if ($method !== 'GET') {
+                return null;
+            }
+            return new WP_REST_Request('GET', '/hutaro/v1/health');
+        }
+
+        if ($api === 'access-counter') {
+            if ($method === 'GET') {
+                $key = isset($_GET['key']) ? sanitize_text_field(wp_unslash((string) $_GET['key'])) : '';
+                $request = new WP_REST_Request('GET', '/hutaro/v1/counter');
+                $request->set_param('key', $key);
+                return $request;
+            }
+
+            if ($method === 'POST') {
+                $raw = file_get_contents('php://input');
+                $decoded = json_decode(is_string($raw) ? $raw : '', true);
+                $key = isset($decoded['key']) ? trim((string) $decoded['key']) : '';
+                $request = new WP_REST_Request('POST', '/hutaro/v1/counter');
+                $request->set_param('key', $key);
+                return $request;
+            }
+
+            return null;
+        }
+
+        return null;
+    }
+
     public static function transform_md_embed_tags(string $content): string {
         if (strpos($content, 'md-embed') === false) {
             return $content;
         }
 
-        $open_close_pattern = '/<md-embed\s+([^>]+)>(.*?)<\/md-embed>/is';
-        $self_pattern = '/<md-embed\s+([^>]+)\/>/is';
+        if (!class_exists('DOMDocument')) {
+            return $content;
+        }
 
-        $content = preg_replace_callback($open_close_pattern, function ($matches) {
-            $attrs = self::parse_html_attrs($matches[1]);
-            $body = trim((string) $matches[2]);
-            return self::md_embed_to_shortcode($attrs, $body);
-        }, $content);
+        $dom = new DOMDocument();
+        libxml_use_internal_errors(true);
+        $loaded = $dom->loadHTML('<?xml encoding="utf-8" ?><div>' . $content . '</div>', LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD);
+        libxml_clear_errors();
+        if (!$loaded) {
+            return $content;
+        }
 
-        $content = preg_replace_callback($self_pattern, function ($matches) {
-            $attrs = self::parse_html_attrs($matches[1]);
-            return self::md_embed_to_shortcode($attrs, '');
-        }, $content);
+        $nodes = $dom->getElementsByTagName('md-embed');
+        if ($nodes->length === 0) {
+            return $content;
+        }
 
-        return $content;
+        $targets = [];
+        foreach ($nodes as $node) {
+            $targets[] = $node;
+        }
+
+        foreach ($targets as $node) {
+            if (!$node instanceof DOMElement || !$node->parentNode) {
+                continue;
+            }
+            $attrs = self::parse_element_attrs($node);
+            $body = trim((string) $node->textContent);
+            $shortcode = self::md_embed_to_shortcode($attrs, $body);
+            $node->parentNode->replaceChild($dom->createTextNode($shortcode), $node);
+        }
+
+        $html = $dom->saveHTML();
+        if (!is_string($html)) {
+            return $content;
+        }
+        return preg_replace('/^<div>|<\/div>$/', '', $html) ?? $content;
     }
 
     private static function md_embed_to_shortcode(array $attrs, string $body): string {
@@ -402,11 +463,16 @@ final class HutaroBridge {
         return '';
     }
 
-    private static function parse_html_attrs(string $raw): array {
+    private static function parse_element_attrs(DOMElement $node): array {
         $attrs = [];
-        preg_match_all('/([a-zA-Z_:][a-zA-Z0-9_:\-]*)\s*=\s*"([^"]*)"/', $raw, $matches, PREG_SET_ORDER);
-        foreach ($matches as $match) {
-            $attrs[strtolower($match[1])] = $match[2];
+        if (!$node->hasAttributes()) {
+            return $attrs;
+        }
+        foreach ($node->attributes as $attribute) {
+            if (!$attribute) {
+                continue;
+            }
+            $attrs[strtolower($attribute->name)] = (string) $attribute->value;
         }
         return $attrs;
     }
@@ -512,6 +578,8 @@ final class HutaroBridge {
 }
 
 HutaroBridge::init();
+register_activation_hook(__FILE__, ['HutaroBridge', 'on_activation']);
+register_deactivation_hook(__FILE__, ['HutaroBridge', 'on_deactivation']);
 
 add_filter('query_vars', function (array $vars): array {
     $vars[] = 'hutaro_legacy_api';
