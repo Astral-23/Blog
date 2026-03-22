@@ -26,6 +26,7 @@ describe("MarkdownContent", () => {
       type: "latestPosts",
       attrs: { source: "all", count: "3" },
     });
+    expect(screen.getByTestId("embed-result").closest("p")).toBeNull();
   });
 
   it("renders counter embed by md-embed type", () => {

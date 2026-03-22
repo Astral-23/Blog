@@ -8,6 +8,7 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
 import { renderEmbed } from "@/components/embeds/embed-registry";
 import { SceneOverlayImage } from "@/components/scene-overlay-image";
+import { buildResponsiveImageAttrs, isOptimizableMediaImage } from "@/lib/media";
 
 type MarkdownContentProps = {
   source: string;
@@ -196,6 +197,34 @@ function mapSafeHref(href?: string): string | undefined {
   return href;
 }
 
+function hasBlockEmbedNode(node: unknown): boolean {
+  if (!node || typeof node !== "object") {
+    return false;
+  }
+
+  const maybeNode = node as {
+    type?: string;
+    children?: Array<{ type?: string; tagName?: string; properties?: Record<string, unknown> }>;
+  };
+  if (maybeNode.type !== "element" || !Array.isArray(maybeNode.children)) {
+    return false;
+  }
+
+  for (const child of maybeNode.children) {
+    if (!child || child.type !== "element" || child.tagName !== "md-embed") {
+      continue;
+    }
+
+    const embedTypeRaw = child.properties?.type;
+    const embedType = typeof embedTypeRaw === "string" ? embedTypeRaw.trim() : "";
+    if (embedType !== "counter") {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentProps) {
   const components = {
     "md-embed": ({ ...props }) => {
@@ -243,14 +272,20 @@ export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentPro
       }
 
       const meta = parseImageMeta(typeof title === "string" ? title : undefined);
+      const responsiveImage = isOptimizableMediaImage(mapped)
+        ? buildResponsiveImageAttrs(mapped, meta.width, meta.maxWidth)
+        : null;
 
       const image = (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           className="markdown-image"
-          src={mapped}
+          src={responsiveImage?.src ?? mapped}
+          srcSet={responsiveImage?.srcSet}
+          sizes={responsiveImage?.sizes}
           alt={alt ?? ""}
           loading="lazy"
+          decoding="async"
           style={{
             transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
             width: meta.width,
@@ -268,6 +303,8 @@ export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentPro
               alt={alt ?? ""}
               caption={meta.caption}
               voices={meta.voices}
+              srcSet={responsiveImage?.srcSet}
+              sizes={responsiveImage?.sizes}
               imageStyle={{
                 transform: meta.rotateDeg !== undefined ? `rotate(${meta.rotateDeg}deg)` : undefined,
                 width: meta.width,
@@ -352,6 +389,21 @@ export function MarkdownContent({ source, demoteH1 = false }: MarkdownContentPro
         return <h1 {...props}>{children}</h1>;
       }
       return <h2 {...props}>{children}</h2>;
+    },
+    p: ({
+      children,
+      node,
+      ...props
+    }: {
+      children?: ReactNode;
+      node?: unknown;
+      className?: string;
+      id?: string;
+    }) => {
+      if (hasBlockEmbedNode(node)) {
+        return <div {...props}>{children}</div>;
+      }
+      return <p {...props}>{children}</p>;
     },
   } as unknown as Components;
 

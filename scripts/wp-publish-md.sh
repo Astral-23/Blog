@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+PAYLOAD_PATH="${PAYLOAD_PATH:-$(pwd)/migration/wordpress/payload.json}"
+
+if [[ -z "${WP_BASE_URL:-}" || -z "${WP_USERNAME:-}" || -z "${WP_APP_PASSWORD:-}" ]]; then
+  cat <<'EOF'
+ERROR: missing environment variables.
+Required:
+  WP_BASE_URL
+  WP_USERNAME
+  WP_APP_PASSWORD
+
+Example:
+  WP_BASE_URL=https://hutaroblog.com \
+  WP_USERNAME=hutaro_admin \
+  WP_APP_PASSWORD='xxxx xxxx xxxx xxxx xxxx xxxx' \
+  npm run wp:publish:md
+EOF
+  exit 1
+fi
+
+echo "[wp:publish:md] export markdown -> payload"
+npm run wp:export -- --out="$(dirname "$PAYLOAD_PATH")"
+
+echo "[wp:publish:md] import payload -> wordpress"
+WP_BASE_URL="${WP_BASE_URL}" \
+WP_USERNAME="${WP_USERNAME}" \
+WP_APP_PASSWORD="${WP_APP_PASSWORD}" \
+npm run wp:import:rest -- --payload="$PAYLOAD_PATH"
+
+echo "[wp:publish:md] done"

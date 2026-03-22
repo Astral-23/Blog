@@ -3,10 +3,10 @@ set -euo pipefail
 
 # Validate env file format and required keys.
 # Usage:
-#   ./scripts/validate-env-file.sh --file .env.production --required "NODE_ENV PORT NEXT_PUBLIC_SITE_URL"
+#   ./scripts/validate-env-file.sh --file .env.production --required "NODE_ENV PORT NEXT_PUBLIC_SITE_URL ACCESS_COUNTER_STORE_PATH"
 
 FILE_PATH=".env.production"
-REQUIRED_KEYS="NODE_ENV PORT NEXT_PUBLIC_SITE_URL"
+REQUIRED_KEYS="NODE_ENV PORT NEXT_PUBLIC_SITE_URL ACCESS_COUNTER_STORE_PATH"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -83,6 +83,12 @@ if ! [[ "$site_url" =~ ^https?://[^[:space:]]+$ ]]; then
 fi
 if [[ "$site_url" =~ /$ ]]; then
   echo "ERROR: NEXT_PUBLIC_SITE_URL must not have trailing slash in $FILE_PATH"
+  exit 1
+fi
+
+counter_store_path="$(require_non_empty_key "ACCESS_COUNTER_STORE_PATH")"
+if ! [[ "$counter_store_path" =~ ^/[^[:space:]]+$ ]]; then
+  echo "ERROR: ACCESS_COUNTER_STORE_PATH must be an absolute path in $FILE_PATH"
   exit 1
 fi
 

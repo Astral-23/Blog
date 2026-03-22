@@ -1,0 +1,26 @@
+# Hutaro Bridge Plugin
+
+WordPress移行時の互換レイヤーです。
+
+## 提供機能
+
+- Shortcodes
+  - `[hutaro_latest_posts]`
+  - `[hutaro_ticker]`
+  - `[hutaro_counter]`
+  - `[hutaro_text]`
+- REST API
+  - `GET /wp-json/hutaro/v1/health`
+  - `GET /wp-json/hutaro/v1/counter?key=...`
+  - `POST /wp-json/hutaro/v1/counter`
+  - 互換: `GET /api/health`
+  - 互換: `GET|POST /api/access-counter`
+- 補助フィルタ
+  - `<md-embed ...>` の shortcode 変換
+  - 外部リンクへ `target="_blank" rel="noreferrer noopener"` 自動付与
+
+## インストール
+
+1. `hutaro-bridge.php` を `wp-content/plugins/hutaro-bridge/` に配置
+2. WordPress管理画面で有効化
+3. `設定 > パーマリンク` を開いて「変更を保存」を実行（rewrite反映）

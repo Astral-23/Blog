@@ -1,0 +1,29 @@
+<?php
+if (!defined('ABSPATH')) { exit; }
+get_header();
+$slug = get_queried_object() && isset(get_queried_object()->slug) ? (string) get_queried_object()->slug : '';
+$title = $slug !== '' ? $slug : single_cat_title('', false);
+$lead = '';
+if ($slug === 'blog') {
+    $lead = '✩ゆるふわ日常系コメディ✩';
+}
+if ($slug === 'blog-tech') {
+    $lead = '工学部...つまりメイドさんロボが作れるってことか？';
+}
+?>
+<section class="page-wrap">
+  <h1 class="page-title"><?php echo esc_html($title); ?></h1>
+  <?php if ($lead !== ''): ?><p class="page-lead"><?php echo esc_html($lead); ?></p><?php endif; ?>
+  <?php
+  $q = new WP_Query([
+      'post_type' => 'post',
+      'post_status' => 'publish',
+      'category_name' => $slug,
+      'posts_per_page' => 100,
+      'orderby' => 'date',
+      'order' => 'DESC',
+  ]);
+  echo hutaro_classic_render_post_cards($q);
+  ?>
+</section>
+<?php get_footer();

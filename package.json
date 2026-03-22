@@ -35,7 +35,10 @@
     "ops:security-audit:summary": "node scripts/security-audit-summary.mjs --input-dir=./audit-reports --max-failed=0",
     "ops:security-audit:summary:md": "node scripts/security-audit-summary.mjs --input-dir=./audit-reports --output=./audit-reports/latest-summary.md --max-failed=0",
     "ops:security-audit:regression": "node scripts/security-audit-regression.mjs --input-dir=./audit-reports --max-new-failures=0",
-    "ops:security-audit:daily": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/security-audit-daily.sh"
+    "ops:security-audit:daily": "TARGET_HOST=${TARGET_HOST:?TARGET_HOST is required} TARGET_USER=${TARGET_USER:-deploy} ./scripts/security-audit-daily.sh",
+    "wp:export": "node scripts/wp-export-content.mjs",
+    "wp:import:rest": "node scripts/wp-import-rest.mjs",
+    "wp:publish:md": "./scripts/wp-publish-md.sh"
   },
   "dependencies": {
     "gray-matter": "^4.0.3",

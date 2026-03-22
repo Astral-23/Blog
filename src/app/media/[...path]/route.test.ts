@@ -43,4 +43,23 @@ describe("/media route", () => {
     expect(res.headers.get("Content-Type")).toBe("image/svg+xml");
     expect(res.headers.get("X-Content-Type-Options")).toBe("nosniff");
   });
+
+  test("returns 400 for invalid width query", async () => {
+    const res = await GET(new Request("http://localhost/media?w=abc"), {
+      params: Promise.resolve({ path: ["cherry.png"] }),
+    });
+    expect(res.status).toBe(400);
+  });
+
+  test("transforms image with width and format query", async () => {
+    const res = await GET(new Request("http://localhost/media?w=120&fm=webp&q=70"), {
+      params: Promise.resolve({ path: ["cherry.png"] }),
+    });
+
+    expect(res.status).toBe(200);
+    expect(res.headers.get("Content-Type")).toBe("image/webp");
+    expect(res.headers.get("Vary")).toBe("Accept");
+    const size = Number.parseInt(res.headers.get("Content-Length") ?? "0", 10);
+    expect(size).toBeGreaterThan(0);
+  });
 });

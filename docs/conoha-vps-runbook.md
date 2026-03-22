@@ -168,7 +168,7 @@ sudo certbot renew --dry-run
     `TARGET_HOST=<host> TARGET_USER=deploy AUTO_ROLLBACK_ON_FAILURE=1 REMOTE_SECURITY_AUDIT_AFTER_DEPLOY=1 REMOTE_SECURITY_AUDIT_FORMAT=json SMOKE_URL=http://<host> ./scripts/deploy.sh`
   - JSON監査をファイル保存:
     `TARGET_HOST=<host> TARGET_USER=deploy AUTO_ROLLBACK_ON_FAILURE=1 REMOTE_SECURITY_AUDIT_AFTER_DEPLOY=1 REMOTE_SECURITY_AUDIT_FORMAT=json REMOTE_SECURITY_AUDIT_REPORT_PATH=./audit-reports/latest.json SMOKE_URL=http://<host> ./scripts/deploy.sh`
-  - `.env.production` の必須キー検証を追加済み（`NODE_ENV PORT NEXT_PUBLIC_SITE_URL`）
+  - `.env.production` の必須キー検証を追加済み（`NODE_ENV PORT NEXT_PUBLIC_SITE_URL ACCESS_COUNTER_STORE_PATH`）
   - `.env.production` の形式検証（空値/URL/PORT/NODE_ENV）を追加済み
   - 前提: ローカルに `rsync` が入っていること
   - 追加:

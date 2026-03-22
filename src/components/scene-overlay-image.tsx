@@ -8,6 +8,8 @@ type SceneOverlayImageProps = {
   alt: string;
   caption: string;
   voices: string[];
+  srcSet?: string;
+  sizes?: string;
   imageStyle?: CSSProperties;
 };
 
@@ -33,7 +35,7 @@ function renderBurstText(text: string) {
   );
 }
 
-export function SceneOverlayImage({ src, alt, caption, voices, imageStyle }: SceneOverlayImageProps) {
+export function SceneOverlayImage({ src, alt, caption, voices, srcSet, sizes, imageStyle }: SceneOverlayImageProps) {
   const [bursts, setBursts] = useState<SceneBurst[]>([]);
   const nextIdRef = useRef(0);
   const lineIndexRef = useRef(0);
@@ -82,7 +84,16 @@ export function SceneOverlayImage({ src, alt, caption, voices, imageStyle }: Sce
         aria-label="セリフ演出を再生"
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img className="markdown-image" src={src} alt={alt} loading="lazy" style={imageStyle} />
+        <img
+          className="markdown-image"
+          src={src}
+          srcSet={srcSet}
+          sizes={sizes}
+          alt={alt}
+          loading="lazy"
+          decoding="async"
+          style={imageStyle}
+        />
         <span className="scene-overlay" aria-live="polite">
           {bursts.map((burst) => (
             <span
