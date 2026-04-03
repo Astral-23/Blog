@@ -1,6 +1,6 @@
 # WordPress 本番運用ランブック（hutaroblog.com）
 
-最終更新: 2026-03-22
+最終更新: 2026-03-23
 
 ## 1. 現在状態
 - `https://hutaroblog.com` は WordPress 配信
@@ -60,15 +60,23 @@ BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh
 補足:
 - `npm run wp:publish:md` 実行時に、`content/assets` 画像最適化（`npm run assets:optimize`）が自動実行されます。
 - 緊急時にスキップする場合のみ `SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md` を使います。
+- `content/blog/*.md` / `content/blog-tech/*.md` から削除された投稿は、公開時に WordPress 側でゴミ箱へ移動されます。
 
 ## 6. テーマ/プラグイン更新
 1. ローカルで修正
-2. サーバーへ反映（`wp-content/themes/`, `wp-content/plugins/`）
-3. 権限修正
+2. サーバーへ反映
+```bash
+TARGET_HOST=<host> TARGET_USER=deploy npm run wp:sync:content
+```
+3. 権限修正（通常は `wp:sync:content` 側で実施済み）
 ```bash
 sudo chown -R www-data:www-data /var/www/hutaroblog/wordpress/wp-content/themes /var/www/hutaroblog/wordpress/wp-content/plugins
 ```
-4. `php -l` と `smoke-check` 実行
+4. `smoke-check` 実行
+
+補足:
+- `wp:publish:md` は Markdown/メディア反映用です（Theme/PluginのPHP変更は反映しません）。
+- `wp:sync:content` は `wordpress/themes/hutaro-classic` と `wordpress/plugins/hutaro-bridge` を rsync で反映します。
 
 ## 7. セキュリティ運用
 1. 管理者パスワードを定期ローテーション
@@ -103,6 +111,18 @@ sudo journalctl -u mysql -n 200 --no-pager
 ```bash
 sudo chown -R www-data:www-data /var/www/hutaroblog/wordpress
 ```
+
+### 8.5 既知障害: UFW有効時の接続不安定（2026-03-23）
+- 症状:
+  - ブラウザで10秒前後の待ち
+  - `curl` で `connect timeout` / `Resolving timed out`
+- 切り分け結果:
+  - `ufw disable` で即改善、`20/20` 成功
+  - `ufw enable` で再発
+- 恒久運用:
+  - 本番は `ufw` を `inactive` のまま運用
+  - ConoHa セキュリティグループで `22(管理者IP限定) / 80 / 443` を制御
+- 詳細記録: `docs/incident-recovery-20260323-ufw-timeout.md`
 
 ## 9. 関連ファイル
 - Nginx: `ops/nginx/wordpress/hutaroblog-wordpress.conf`

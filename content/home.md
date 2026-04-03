@@ -35,10 +35,6 @@ Hutaro Blog へようこそ！
 ## 各種リンク
 ---
 
-[AtCoder](https://atcoder.jp/users/Astral__) ...算数パ✩チンコ
-
-[Github](https://github.com/Astral-23) ... 就活御用達 SNS
-
 [X](https://x.com/inuki_fuko_no_1)... 暗く辛い現実をモットーにポストを投稿しています✩
 
 

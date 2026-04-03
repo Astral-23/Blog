@@ -14,6 +14,7 @@
   - `scripts/wp-import-rest.mjs`
   - `scripts/wp-migrate-utils.mjs`
   - `scripts/wp-publish-md.sh`（`npm run wp:publish:md`）
+  - `scripts/wordpress-vps-sync-content.sh`（`npm run wp:sync:content`）
 - WordPress実装:
   - Theme: `wordpress/themes/hutaro-classic/`
   - Plugin: `wordpress/plugins/hutaro-bridge/hutaro-bridge.php`
@@ -61,6 +62,7 @@
 補足:
 - `wp:publish:md` は内部で `assets:optimize` を先に実行します。
 - 最適化を外した検証が必要な場合のみ `SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md` を使用します。
+- Theme/Plugin 変更反映は `TARGET_HOST=<host> TARGET_USER=deploy npm run wp:sync:content` を使用します。
 
 ## 7. 禁止事項
 - WordPress管理画面を正本にする運用。

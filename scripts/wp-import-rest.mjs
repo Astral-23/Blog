@@ -57,6 +57,48 @@ async function wpFetchJson(pathname, init = {}) {
   return response.json();
 }
 
+async function listPostsByCategory(categoryId) {
+  const posts = [];
+  let page = 1;
+
+  while (true) {
+    const response = await fetch(
+      `${baseUrl}/wp-json/wp/v2/posts?categories=${encodeURIComponent(categoryId)}&per_page=100&page=${page}&context=edit&status=any`,
+      {
+        headers: {
+          Authorization: authHeader,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const text = await response.text();
+      throw new Error(`WP API posts list failed (${response.status}): ${text}`);
+    }
+
+    const items = await response.json();
+    if (!Array.isArray(items) || items.length === 0) {
+      break;
+    }
+
+    posts.push(...items);
+
+    const totalPages = Number(response.headers.get("x-wp-totalpages") ?? "1");
+    if (!Number.isFinite(totalPages) || page >= totalPages) {
+      break;
+    }
+    page += 1;
+  }
+
+  return posts;
+}
+
+async function trashPost(postId) {
+  return wpFetchJson(`/wp-json/wp/v2/posts/${postId}`, {
+    method: "DELETE",
+  });
+}
+
 async function ensureCategory(slug) {
   const existing = await wpFetchJson(`/wp-json/wp/v2/categories?slug=${encodeURIComponent(slug)}`);
   if (Array.isArray(existing) && existing[0]?.id) {
@@ -78,7 +120,9 @@ async function ensureCategory(slug) {
 }
 
 async function ensureMedia(file) {
-  const filename = path.basename(file.localPath);
+  const mediaKey = String(file.key || "").trim();
+  const fallbackFilename = path.basename(file.localPath);
+  const filename = mediaKey ? mediaKey.replace(/[\\/]+/g, "__") : fallbackFilename;
   const existing = await wpFetchJson(`/wp-json/wp/v2/media?search=${encodeURIComponent(filename)}&per_page=100`);
   const exact = Array.isArray(existing)
     ? existing.find((item) => item?.source_url && String(item.source_url).endsWith(`/${filename}`))
@@ -267,6 +311,30 @@ async function main() {
       continue;
     }
     console.log(`[wp-import-rest] upserted post ${post.section}/${post.slug} id=${saved.id}`);
+  }
+
+  const managedByCategory = new Map([
+    [blogCategoryId, new Set((payload.posts ?? []).filter((post) => post.section === "blog").map((post) => post.slug))],
+    [
+      techCategoryId,
+      new Set((payload.posts ?? []).filter((post) => post.section === "blog-tech").map((post) => post.slug)),
+    ],
+  ]);
+
+  for (const [categoryId, payloadSlugs] of managedByCategory.entries()) {
+    const existingPosts = await listPostsByCategory(categoryId);
+    for (const existing of existingPosts) {
+      const slug = String(existing?.slug ?? "");
+      const status = String(existing?.status ?? "");
+      if (!slug || status === "trash") {
+        continue;
+      }
+      if (payloadSlugs.has(slug)) {
+        continue;
+      }
+      await trashPost(existing.id);
+      console.log(`[wp-import-rest] trashed missing post category=${categoryId} slug=${slug} id=${existing.id}`);
+    }
   }
 
   console.log("[wp-import-rest] done");

@@ -32,6 +32,28 @@ export function listMarkdownFiles(dirPath) {
     .map((name) => path.join(dirPath, name));
 }
 
+function listAssetFiles(dirPath) {
+  if (!fs.existsSync(dirPath)) {
+    return [];
+  }
+
+  const out = [];
+  for (const entry of fs.readdirSync(dirPath, { withFileTypes: true })) {
+    if (entry.name.startsWith(".")) {
+      continue;
+    }
+    const fullPath = path.join(dirPath, entry.name);
+    if (entry.isDirectory()) {
+      out.push(...listAssetFiles(fullPath));
+      continue;
+    }
+    if (entry.isFile()) {
+      out.push(fullPath);
+    }
+  }
+  return out.sort();
+}
+
 export function parseImageMeta(title = "") {
   const meta = {};
   if (!title) {
@@ -102,7 +124,7 @@ function escapeHtml(value) {
 }
 
 function toAssetPlaceholder(url) {
-  const normalized = url.replace(/^\.\//, "");
+  const normalized = url.trim().replace(/^\.\//, "").replace(/^\/+/, "");
   if (normalized.startsWith("assets/")) {
     const name = normalized.replace(/^assets\//, "");
     return `__HUTARO_MEDIA__/${name}`;
@@ -117,6 +139,8 @@ function buildStyleFromMeta(meta) {
   }
   if (meta.width) {
     chunks.push(`width: ${/^\d+$/.test(meta.width) ? `${meta.width}px` : meta.width}`);
+    chunks.push("margin-left: auto");
+    chunks.push("margin-right: auto");
   }
   if (meta.height) {
     chunks.push(`height: ${/^\d+$/.test(meta.height) ? `${meta.height}px` : meta.height}`);
@@ -398,15 +422,10 @@ export function collectMigrationContent() {
 
   const assetsDir = path.join(CONTENT_ROOT, "assets");
   const media = fs.existsSync(assetsDir)
-    ? fs
-        .readdirSync(assetsDir)
-        .filter((name) => !name.startsWith("."))
-        .filter((name) => fs.statSync(path.join(assetsDir, name)).isFile())
-        .sort()
-        .map((name) => ({
-          key: name,
-          localPath: path.join(assetsDir, name),
-        }))
+    ? listAssetFiles(assetsDir).map((fullPath) => ({
+        key: path.relative(assetsDir, fullPath).split(path.sep).join("/"),
+        localPath: fullPath,
+      }))
     : [];
 
   return {

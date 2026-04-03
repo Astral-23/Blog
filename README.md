@@ -7,6 +7,7 @@
 ## 主要コマンド
 
 ```bash
+npm run preview
 npm run wp:publish:md
 npm run wp:export
 npm run wp:import:rest

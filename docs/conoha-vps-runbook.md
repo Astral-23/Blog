@@ -1,6 +1,6 @@
 # ConoHa VPS Runbook（WordPress本番基盤）
 
-最終更新: 2026-03-22
+最終更新: 2026-03-23
 対象: Ubuntu 24.04 / ConoHa VPS
 
 ## 1. 目的
@@ -13,13 +13,19 @@
 - App: WordPress + PHP-FPM
 - DB: MySQL 8
 - TLS: Let's Encrypt
-- 監視/防御: fail2ban, UFW
+- 監視/防御: fail2ban, ConoHaセキュリティグループ
 
 ## 3. セキュリティ基準
 - SSH は `deploy` ユーザー + 公開鍵認証
-- UFW は `22/80/443` のみ許可
+- ネットワーク制御は ConoHa セキュリティグループを正本とする
+- `22/tcp` は管理者IP/CIDRに限定し、`80/443` のみ公開
 - fail2ban `sshd` jail 有効
 - 管理画面認証情報は強固な値を使用し、Application Password を最小化
+
+## 3.1 ファイアウォール運用ポリシー
+- `ufw` は本番では `inactive` を維持する（2026-03-23の接続障害対応による）。
+- 理由: `ufw` 有効時に `connect timeout` / `Resolving timed out` が再現し、可用性を毀損したため。
+- 再導入する場合は検証環境で再現テストを完了してから実施する。
 
 ## 4. 日次確認
 ```bash
@@ -27,6 +33,7 @@ sudo systemctl status nginx --no-pager -l
 sudo systemctl status php8.3-fpm --no-pager -l
 sudo systemctl status mysql --no-pager -l
 sudo fail2ban-client status sshd
+sudo ufw status
 ```
 
 ## 5. 障害時の一次切り分け

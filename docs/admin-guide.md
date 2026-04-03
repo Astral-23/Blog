@@ -33,10 +33,20 @@ WP_APP_PASSWORD=<WordPress Application Password>
 npm run wp:publish:md
 ```
 
+公開前にローカルで全体プレビューしたい場合:
+```bash
+npm run preview
+```
+
+補足:
+- `migration/wordpress/preview-site/` に静的HTMLを生成して、`http://localhost:4173` で表示します。
+- 4173が使用中の場合は `npm run preview -- --port=4273` のようにポートを変更してください。
+
 内部処理:
 1. `npm run assets:optimize`（`content/assets` の画像を圧縮・必要時リサイズ）
 2. `npm run wp:export`
 3. `npm run wp:import:rest`
+4. `content/blog/*.md` / `content/blog-tech/*.md` に存在しない投稿は WordPress 側でゴミ箱へ移動
 
 生成ファイル:
 - `migration/wordpress/payload.json`
@@ -72,6 +82,7 @@ card: "assets/your-card-image.jpg"
 - `title` は必須推奨
 - 見出しは `##` から開始推奨
 - 画像は `assets/...` 参照を使う
+- `content/assets` 配下のサブフォルダも利用可能（例: `assets/blog/2026/map.png`）
 - 先頭の大きい画像は `loading=eager; fetchpriority=high` を使うと体感速度改善に有効
 
 画像メタ例（タイトル文字列で指定）:
@@ -110,3 +121,6 @@ curl -i https://hutaroblog.com/api/health
 curl -i "https://hutaroblog.com/api/access-counter?key=home"
 ```
 4. サーバー障害は `docs/wordpress-production-runbook.md` を参照
+
+補足:
+- Theme/Plugin（PHP/CSS/JS）を変更した場合は、`wp:publish:md` ではなく `TARGET_HOST=<host> TARGET_USER=deploy npm run wp:sync:content` で反映してください。
