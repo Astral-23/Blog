@@ -98,9 +98,40 @@ WordPress側で互換変換されます。
 <md-embed type="ticker" text="WELCOME TO MY BLOG" speed="0.08" color="rainbow"></md-embed>
 <md-embed type="counter"></md-embed>
 <md-embed type="text" position="center" size="lg" color="accent">見出しテキスト</md-embed>
+<md-embed type="comments" title="コメントを書く"></md-embed>
 ```
 
-## 6. 公開後チェック
+補足:
+- `type="comments"` を置いた位置にコメント欄を表示できます（記事ページのみ）。
+- `title` でフォーム見出しを変更できます。
+
+## 6. コメント機能（標準 + Anti-spam）
+
+管理画面の開き方:
+- `https://<あなたのドメイン>/wp-admin/` にログイン
+- コメント全般設定: `設定 > ディスカッション`
+- コメント一覧/承認: `コメント`
+- プラグイン管理: `プラグイン > インストール済みプラグイン`
+
+おすすめ初期設定（`設定 > ディスカッション`）:
+- `Allow people to submit comments on new posts` を ON
+- `An administrator must always approve the comment` を ON
+- `Comment author must have a previously approved comment` を ON
+- `Hold a comment in the queue if it contains 2 or more links`
+- `Automatically close comments on articles older than 30 days`（必要なら）
+- `Email me whenever` の2項目を ON（コメント投稿時 / モデレーション待ち）
+- 返信を使う場合は `Enable threaded (nested) comments` を ON
+
+Anti-spam（Akismet）:
+1. `プラグイン > インストール済みプラグイン` で `Akismet Anti-spam` を有効化
+2. `設定 > Akismet Anti-spam` で API キーを設定
+3. 迷惑コメントを自動判定しつつ、`コメント` 画面で最終確認
+
+補足:
+- このリポジトリの `wp:publish:md` は新規/更新投稿を `comment_status=open` で同期します。
+- テーマ側で記事ページ下部に標準コメントフォームを表示します。
+
+## 7. 公開後チェック
 ```bash
 BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh
 ```
@@ -109,10 +140,11 @@ BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh
 - `/` 200
 - `/blog/` 200
 - `/blog/1/` 200（既定）
+- `/category/blog/` は `/blog/` に 301
 - `/api/health` 200 + `{"status":"ok"}`
 - `/api/access-counter?key=home` 200 + `{"total":...}`
 
-## 7. 失敗時の対応
+## 8. 失敗時の対応
 1. `npm run wp:publish:md` を再実行（冪等）
 2. `.env.wp.local` の3項目を確認
 3. APIの挙動確認
@@ -123,4 +155,11 @@ curl -i "https://hutaroblog.com/api/access-counter?key=home"
 4. サーバー障害は `docs/wordpress-production-runbook.md` を参照
 
 補足:
-- Theme/Plugin（PHP/CSS/JS）を変更した場合は、`wp:publish:md` ではなく `TARGET_HOST=<host> TARGET_USER=deploy npm run wp:sync:content` で反映してください。
+- Theme/Plugin（PHP/CSS/JS）を変更した場合は、`wp:publish:md` では反映されません。
+- 反映には次を実行します（重要）:
+```bash
+SUDO_PASSWORD='<vpsのsudoパスワード>' \
+TARGET_HOST=blog-conoha TARGET_USER=deploy \
+npm run wp:sync:content
+```
+- `wp:sync:content` は `wordpress/themes/hutaro-classic` と `wordpress/plugins/hutaro-bridge` を本番サーバーへ同期し、`sudo` で配置・権限調整（`www-data:www-data`）まで行います。

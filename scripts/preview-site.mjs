@@ -176,12 +176,18 @@ function renderLatestPostsShortcode(attrs, allPosts) {
   return `<div class="hutaro-embed-latest-posts">${renderPostCards(posts)}</div>`;
 }
 
+function renderCommentsShortcode(attrs) {
+  const title = String(attrs.title || "コメントを書く").trim() || "コメントを書く";
+  return `<section class="comments-area comments-area-preview"><h3 class="comment-reply-title">${escapeHtml(title)}</h3><p class="no-comments">ローカルプレビューではコメント機能はダミー表示です。本番WordPressで動作します。</p></section>`;
+}
+
 function renderShortcodes(html, allPosts) {
   return html
     .replace(/\[hutaro_text([^\]]*)\]/g, (_, rawAttrs) => renderTextShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_ticker([^\]]*)\]/g, (_, rawAttrs) => renderTickerShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_counter([^\]]*)\]/g, (_, rawAttrs) => renderCounterShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_latest_posts([^\]]*)\]/g, (_, rawAttrs) => renderLatestPostsShortcode(parseAttrs(rawAttrs), allPosts));
+    .replace(/\[hutaro_latest_posts([^\]]*)\]/g, (_, rawAttrs) => renderLatestPostsShortcode(parseAttrs(rawAttrs), allPosts))
+    .replace(/\[hutaro_comments([^\]]*)\]/g, (_, rawAttrs) => renderCommentsShortcode(parseAttrs(rawAttrs)));
 }
 
 function renderContent(html, allPosts) {

@@ -40,9 +40,39 @@ check_status() {
   exit 1
 }
 
+check_redirect() {
+  local path="$1"
+  local expected_code="$2"
+  local expected_location="$3"
+  local headers=""
+  local code=""
+  local location=""
+  local attempt=1
+
+  while [[ "$attempt" -le "$SMOKE_RETRIES" ]]; do
+    headers="$(curl -sSI --connect-timeout "${CURL_CONNECT_TIMEOUT_SEC}" --max-time "${CURL_MAX_TIME_SEC}" "${BASE_URL}${path}" 2>/dev/null || true)"
+    code="$(printf "%s\n" "$headers" | awk 'toupper($1) ~ /^HTTP\// {c=$2} END {print c}')"
+    location="$(printf "%s\n" "$headers" | awk 'BEGIN{IGNORECASE=1} /^location:[[:space:]]*/ {sub(/\r$/, "", $0); sub(/^location:[[:space:]]*/,"",$0); print $0; exit}')"
+
+    if [[ "$code" == "$expected_code" && "$location" == "$expected_location" ]]; then
+      echo "OK: ${path} -> ${code} Location=${location} (attempt ${attempt}/${SMOKE_RETRIES})"
+      return 0
+    fi
+
+    if [[ "$attempt" -lt "$SMOKE_RETRIES" ]]; then
+      sleep "$SMOKE_DELAY_SEC"
+    fi
+    attempt=$((attempt + 1))
+  done
+
+  echo "FAIL: ${path} expected ${expected_code} Location=${expected_location}, got ${code} Location=${location}"
+  exit 1
+}
+
 check_status "/" "200"
 check_status "/blog/" "200"
 check_status "${SMOKE_POST_PATH}" "200"
+check_redirect "/category/blog/" "301" "${BASE_URL}/blog/"
 check_status "/api/health" "200"
 check_status "/api/access-counter?key=home" "200"
 

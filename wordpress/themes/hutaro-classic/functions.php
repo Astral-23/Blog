@@ -7,7 +7,7 @@ function hutaro_classic_setup(): void {
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
     add_theme_support('menus');
-    add_theme_support('html5', ['search-form', 'gallery', 'caption', 'style', 'script']);
+    add_theme_support('html5', ['search-form', 'comment-form', 'comment-list', 'gallery', 'caption', 'style', 'script']);
     register_nav_menus([
         'global' => 'Global Navigation',
     ]);
@@ -98,6 +98,12 @@ function hutaro_classic_nav_link_classes(array $atts, WP_Post $menu_item, stdCla
     return $atts;
 }
 add_filter('nav_menu_link_attributes', 'hutaro_classic_nav_link_classes', 10, 3);
+
+function hutaro_classic_remove_comment_url_field(array $fields): array {
+    unset($fields['url']);
+    return $fields;
+}
+add_filter('comment_form_default_fields', 'hutaro_classic_remove_comment_url_field');
 
 function hutaro_classic_meta_description_from_text(string $text): string {
     $normalized = wp_strip_all_tags($text, true);

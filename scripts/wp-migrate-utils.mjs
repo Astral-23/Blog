@@ -220,8 +220,11 @@ function replaceImagesAndLinks(text) {
   });
 
   out = escapeHtml(out);
-  for (const item of placeholders) {
-    out = out.replace(item.key, item.html);
+  // Restore from the last placeholder first so nested placeholders
+  // (e.g. [![img](...)](...)) are fully expanded.
+  for (let i = placeholders.length - 1; i >= 0; i -= 1) {
+    const item = placeholders[i];
+    out = out.replaceAll(item.key, item.html);
   }
   return out;
 }
@@ -241,10 +244,13 @@ function convertEmbedTags(text) {
     }
 
     const parts = [];
-    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits"]) {
+    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class"]) {
       if (attrs[key] && attrs[key].trim()) {
         parts.push(`${key}="${attrs[key].replaceAll('"', "'")}"`);
       }
+    }
+    if (Object.prototype.hasOwnProperty.call(attrs, "title")) {
+      parts.push(`title="${String(attrs.title).replaceAll('"', "'")}"`);
     }
 
     if (attrs.counterkey && attrs.counterkey.trim()) {
@@ -263,6 +269,9 @@ function convertEmbedTags(text) {
     }
     if (type === "counter") {
       return `[hutaro_counter${parts.length ? ` ${parts.join(" ")}` : ""}]`;
+    }
+    if (type === "comments") {
+      return `[hutaro_comments${parts.length ? ` ${parts.join(" ")}` : ""}]`;
     }
     if (type === "text" || type === "styledText") {
       return `[hutaro_text${parts.length ? ` ${parts.join(" ")}` : ""}]`;

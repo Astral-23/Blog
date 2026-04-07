@@ -99,6 +99,18 @@ async function trashPost(postId) {
   });
 }
 
+async function trashPage(pageId) {
+  return wpFetchJson(`/wp-json/wp/v2/pages/${pageId}`, {
+    method: "DELETE",
+  });
+}
+
+async function listPagesBySlug(slug) {
+  return wpFetchJson(
+    `/wp-json/wp/v2/pages?slug=${encodeURIComponent(slug)}&per_page=100&context=edit&status=any`,
+  );
+}
+
 async function ensureCategory(slug) {
   const existing = await wpFetchJson(`/wp-json/wp/v2/categories?slug=${encodeURIComponent(slug)}`);
   if (Array.isArray(existing) && existing[0]?.id) {
@@ -203,6 +215,8 @@ async function upsertPost(post, categoryId, mediaMap) {
     excerpt: post.excerpt,
     categories: [categoryId],
     date: post.publishedAt,
+    comment_status: "open",
+    ping_status: "closed",
   };
 
   if (featuredId) {
@@ -236,6 +250,10 @@ async function upsertPost(post, categoryId, mediaMap) {
     const existingExcerpt = normalize(hit?.excerpt?.raw ?? hit?.excerpt?.rendered);
     const existingFeatured = Number(hit?.featured_media ?? 0);
     const nextFeatured = Number(body.featured_media ?? 0);
+    const existingCommentStatus = normalize(hit?.comment_status);
+    const nextCommentStatus = normalize(body.comment_status);
+    const existingPingStatus = normalize(hit?.ping_status);
+    const nextPingStatus = normalize(body.ping_status);
     const existingDateLocal = toEpochOrNull(hit?.date);
     const existingDateGmt = toGmtEpochOrNull(hit?.date_gmt);
     const nextDateLocal = toEpochOrNull(body.date);
@@ -250,6 +268,8 @@ async function upsertPost(post, categoryId, mediaMap) {
       existingContent === normalize(body.content) &&
       existingExcerpt === normalize(body.excerpt) &&
       existingFeatured === nextFeatured &&
+      existingCommentStatus === nextCommentStatus &&
+      existingPingStatus === nextPingStatus &&
       sameDate;
 
     if (unchanged) {
@@ -302,6 +322,19 @@ async function main() {
     }),
   });
   console.log(`[wp-import-rest] set static front page id=${homePage.id}`);
+
+  const samplePages = await listPagesBySlug("sample-page");
+  if (Array.isArray(samplePages)) {
+    for (const page of samplePages) {
+      const pageId = Number(page?.id ?? 0);
+      const status = String(page?.status ?? "");
+      if (!Number.isFinite(pageId) || pageId <= 0 || status === "trash" || pageId === Number(homePage.id)) {
+        continue;
+      }
+      await trashPage(pageId);
+      console.log(`[wp-import-rest] trashed default sample page id=${pageId}`);
+    }
+  }
 
   for (const post of payload.posts ?? []) {
     const categoryId = post.section === "blog-tech" ? techCategoryId : blogCategoryId;

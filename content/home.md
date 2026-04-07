@@ -32,6 +32,15 @@ Hutaro Blog へようこそ！
 
 <br>
 
+## 次回連載予定日
+---
+
+<md-embed type="text" position ="center" size="2rem" color="#4ca014">
+4/15あたり
+</md-embed>
+
+<br>
+
 ## 各種リンク
 ---
 

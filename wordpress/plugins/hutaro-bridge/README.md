@@ -9,6 +9,7 @@ WordPress移行時の互換レイヤーです。
   - `[hutaro_ticker]`
   - `[hutaro_counter]`
   - `[hutaro_text]`
+  - `[hutaro_comments]`
 - REST API
   - `GET /wp-json/hutaro/v1/health`
   - `GET /wp-json/hutaro/v1/counter?key=...`

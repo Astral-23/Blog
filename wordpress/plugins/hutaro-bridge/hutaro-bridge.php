@@ -19,6 +19,7 @@ final class HutaroBridge {
         add_shortcode('hutaro_ticker', [self::class, 'render_ticker_shortcode']);
         add_shortcode('hutaro_counter', [self::class, 'render_counter_shortcode']);
         add_shortcode('hutaro_latest_posts', [self::class, 'render_latest_posts_shortcode']);
+        add_shortcode('hutaro_comments', [self::class, 'render_comments_shortcode']);
 
         add_filter('the_content', [self::class, 'transform_md_embed_tags'], 5);
         add_filter('the_content', [self::class, 'harden_external_links'], 20);
@@ -26,8 +27,11 @@ final class HutaroBridge {
         add_action('rest_api_init', [self::class, 'register_rest_routes']);
         add_action('wp_enqueue_scripts', [self::class, 'enqueue_assets']);
         add_action('init', [self::class, 'register_legacy_rewrite_rules']);
+        add_action('template_redirect', [self::class, 'redirect_legacy_category_paths'], 1);
         add_action('parse_request', [self::class, 'handle_legacy_api_request']);
         add_filter('upload_mimes', [self::class, 'allow_extra_mimes']);
+        add_filter('wp_sitemaps_add_provider', [self::class, 'filter_sitemap_providers'], 10, 2);
+        add_filter('wp_sitemaps_posts_query_args', [self::class, 'filter_sitemap_posts_query_args'], 10, 2);
     }
 
     public static function on_activation(): void {
@@ -204,6 +208,40 @@ final class HutaroBridge {
         return '<div class="hutaro-embed-latest-posts"><ul class="post-list">' . implode('', $items) . '</ul></div>';
     }
 
+    public static function render_comments_shortcode(array $atts): string {
+        if (!is_singular() || post_password_required()) {
+            return '';
+        }
+
+        $attrs = shortcode_atts([
+            'title' => '',
+            'class' => '',
+        ], $atts, 'hutaro_comments');
+
+        $title = trim(wp_strip_all_tags((string) $attrs['title']));
+        $title_is_explicit = array_key_exists('title', $atts);
+        $extra_classes = [];
+        foreach (preg_split('/\s+/', trim((string) $attrs['class'])) ?: [] as $candidate) {
+            $sanitized = sanitize_html_class($candidate);
+            if ($sanitized !== '') {
+                $extra_classes[] = $sanitized;
+            }
+        }
+
+        $GLOBALS['hutaro_comments_embed_args'] = [
+            'title_reply' => $title,
+            'title_is_explicit' => $title_is_explicit,
+            'extra_classes' => array_values(array_unique($extra_classes)),
+        ];
+
+        ob_start();
+        comments_template();
+        $html = (string) ob_get_clean();
+
+        unset($GLOBALS['hutaro_comments_embed_args']);
+        return $html;
+    }
+
     public static function register_rest_routes(): void {
         register_rest_route('hutaro/v1', '/health', [
             'methods' => 'GET',
@@ -258,6 +296,41 @@ final class HutaroBridge {
         // 旧API互換
         add_rewrite_rule('^api/health/?$', 'index.php?hutaro_legacy_api=health', 'top');
         add_rewrite_rule('^api/access-counter/?$', 'index.php?hutaro_legacy_api=access-counter', 'top');
+    }
+
+    public static function redirect_legacy_category_paths(): void {
+        if (is_admin() || is_feed() || wp_doing_ajax() || wp_doing_cron()) {
+            return;
+        }
+        if (!is_category()) {
+            return;
+        }
+
+        $term = get_queried_object();
+        if (!$term instanceof WP_Term) {
+            return;
+        }
+
+        $slug = (string) $term->slug;
+        if ($slug !== 'blog' && $slug !== 'blog-tech') {
+            return;
+        }
+
+        $base = $slug === 'blog' ? '/blog/' : '/blog-tech/';
+        $paged = max(1, intval(get_query_var('paged')));
+        $target = $paged > 1 ? home_url($base . 'page/' . $paged . '/') : home_url($base);
+        $target = trailingslashit($target);
+
+        $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) $_SERVER['REQUEST_URI'] : '';
+        $request_path = wp_parse_url($request_uri, PHP_URL_PATH);
+        $target_path = wp_parse_url($target, PHP_URL_PATH);
+
+        if (is_string($request_path) && is_string($target_path) && untrailingslashit($request_path) === untrailingslashit($target_path)) {
+            return;
+        }
+
+        wp_safe_redirect($target, 301, 'HutaroBridge');
+        exit;
     }
 
     public static function handle_legacy_api_request(WP $wp): void {
@@ -434,7 +507,7 @@ final class HutaroBridge {
             return '';
         }
 
-        $allowed = ['count', 'source', 'text', 'size', 'position', 'speed', 'color', 'counterkey', 'digits'];
+        $allowed = ['count', 'source', 'text', 'size', 'position', 'speed', 'color', 'counterkey', 'digits', 'title', 'class'];
         $parts = [];
         foreach ($allowed as $key) {
             if (!isset($attrs[$key])) {
@@ -455,6 +528,9 @@ final class HutaroBridge {
         }
         if ($type === 'counter') {
             return '[hutaro_counter ' . implode(' ', $parts) . ']';
+        }
+        if ($type === 'comments') {
+            return '[hutaro_comments ' . implode(' ', $parts) . ']';
         }
         if ($type === 'text' || $type === 'styledText') {
             return '[hutaro_text ' . implode(' ', $parts) . ']';
@@ -574,6 +650,31 @@ final class HutaroBridge {
     public static function allow_extra_mimes(array $mimes): array {
         $mimes['svg'] = 'image/svg+xml';
         return $mimes;
+    }
+
+    public static function filter_sitemap_providers($provider, string $name) {
+        // Exclude low-value duplicate URLs from indexing targets.
+        if ($name === 'users' || $name === 'taxonomies') {
+            return false;
+        }
+        return $provider;
+    }
+
+    public static function filter_sitemap_posts_query_args(array $args, string $post_type): array {
+        if ($post_type !== 'page') {
+            return $args;
+        }
+
+        $sample_page = get_page_by_path('sample-page', OBJECT, 'page');
+        if (!$sample_page instanceof WP_Post) {
+            return $args;
+        }
+
+        $blocked_ids = isset($args['post__not_in']) && is_array($args['post__not_in']) ? $args['post__not_in'] : [];
+        $blocked_ids[] = intval($sample_page->ID);
+        $args['post__not_in'] = array_values(array_unique(array_filter(array_map('intval', $blocked_ids))));
+
+        return $args;
     }
 }
 
