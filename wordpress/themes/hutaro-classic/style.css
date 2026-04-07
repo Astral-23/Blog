@@ -344,6 +344,31 @@ a { color: inherit; text-decoration: none; }
   background: var(--surface);
 }
 
+.comment-body {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.comment-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.comment-author.vcard {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  margin: 0;
+}
+
+.comment-author.vcard .avatar {
+  margin: 0;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
+
 .comment-list .children {
   list-style: none;
   margin: 0.8rem 0 0;
@@ -352,12 +377,16 @@ a { color: inherit; text-decoration: none; }
 }
 
 .comment-metadata {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--muted);
 }
 
 .comment-content p {
-  margin: 0.6rem 0 0;
+  margin: 0.3rem 0 0;
 }
 
 .comment-reply-link {
