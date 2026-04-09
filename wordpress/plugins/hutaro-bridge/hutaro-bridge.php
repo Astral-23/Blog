@@ -13,6 +13,8 @@ if (!defined('ABSPATH')) {
 final class HutaroBridge {
     private const COUNTER_OPTION_KEY = 'hutaro_counter_store';
     private const COUNTER_KEY_PATTERN = '/^[a-z0-9][a-z0-9:_\/-]{0,127}$/';
+    private const COUNTER_HIT_COOLDOWN_SEC = 1800;
+    private const BOT_UA_PATTERN = '/(bot|crawler|spider|slurp|bingpreview|mediapartners-google|adsbot|google web preview|headless|selenium|phantomjs|curl|wget|python-requests|go-http-client|axios|httpclient|scrapy|uptimerobot|pingdom|statuscake|datadog|newrelic|lighthouse)/i';
 
     public static function init(): void {
         add_shortcode('hutaro_text', [self::class, 'render_text_shortcode']);
@@ -383,6 +385,15 @@ final class HutaroBridge {
             'updatedAt' => gmdate('c'),
         ];
 
+        if (!self::should_count_counter_hit($request, $key)) {
+            return new WP_REST_Response([
+                'key' => $key,
+                'total' => intval($entry['total']),
+                'updatedAt' => (string) $entry['updatedAt'],
+                'counted' => false,
+            ], 200);
+        }
+
         $entry['total'] = intval($entry['total']) + 1;
         $entry['updatedAt'] = gmdate('c');
 
@@ -393,6 +404,7 @@ final class HutaroBridge {
             'key' => $key,
             'total' => intval($entry['total']),
             'updatedAt' => (string) $entry['updatedAt'],
+            'counted' => true,
         ], 200);
     }
 
@@ -596,6 +608,83 @@ final class HutaroBridge {
 
     private static function is_valid_counter_key(string $key): bool {
         return preg_match(self::COUNTER_KEY_PATTERN, $key) === 1;
+    }
+
+    private static function should_count_counter_hit(WP_REST_Request $request, string $key): bool {
+        if (self::is_likely_non_human_request($request)) {
+            return false;
+        }
+
+        $ip = self::resolve_client_ip();
+        if ($ip === '') {
+            return true;
+        }
+
+        $cooldown_key = 'hutaro_counter_cd_' . md5($key . '|' . $ip);
+        $cooldown_hit = get_transient($cooldown_key);
+        if ($cooldown_hit !== false) {
+            return false;
+        }
+
+        set_transient($cooldown_key, 1, self::COUNTER_HIT_COOLDOWN_SEC);
+        return true;
+    }
+
+    private static function is_likely_non_human_request(WP_REST_Request $request): bool {
+        $ua = trim((string) $request->get_header('user_agent'));
+        if ($ua === '' || preg_match(self::BOT_UA_PATTERN, $ua) === 1) {
+            return true;
+        }
+
+        $purpose_headers = [
+            (string) $request->get_header('purpose'),
+            (string) $request->get_header('sec_purpose'),
+            (string) $request->get_header('x_purpose'),
+            (string) $request->get_header('x_moz'),
+        ];
+
+        foreach ($purpose_headers as $value) {
+            $raw = strtolower(trim($value));
+            if ($raw === '') {
+                continue;
+            }
+            if (strpos($raw, 'prefetch') !== false || strpos($raw, 'prerender') !== false || strpos($raw, 'preview') !== false) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static function resolve_client_ip(): string {
+        $candidates = [];
+
+        if (isset($_SERVER['HTTP_CF_CONNECTING_IP'])) {
+            $candidates[] = (string) $_SERVER['HTTP_CF_CONNECTING_IP'];
+        }
+
+        if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $parts = explode(',', (string) $_SERVER['HTTP_X_FORWARDED_FOR']);
+            if (count($parts) > 0) {
+                $candidates[] = (string) $parts[0];
+            }
+        }
+
+        if (isset($_SERVER['REMOTE_ADDR'])) {
+            $candidates[] = (string) $_SERVER['REMOTE_ADDR'];
+        }
+
+        foreach ($candidates as $candidate) {
+            $ip = trim($candidate);
+            if ($ip === '') {
+                continue;
+            }
+            if (filter_var($ip, FILTER_VALIDATE_IP) !== false) {
+                return $ip;
+            }
+        }
+
+        return '';
     }
 
     private static function get_counter_store(): array {

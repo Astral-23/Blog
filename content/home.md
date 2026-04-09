@@ -32,7 +32,7 @@ Hutaro Blog へようこそ！
 
 <br>
 
-## 次回連載予定日
+## 次回投稿予定日
 ---
 
 <md-embed type="text" position ="center" size="2rem" color="#4ca014">

@@ -244,7 +244,7 @@ function convertEmbedTags(text) {
     }
 
     const parts = [];
-    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class"]) {
+    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap"]) {
       if (attrs[key] && attrs[key].trim()) {
         parts.push(`${key}="${attrs[key].replaceAll('"', "'")}"`);
       }
@@ -360,6 +360,12 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
       flushParagraph(paragraphLines, html);
       const items = [trimmed.replace(/^[-*]\s+/, "")];
       html.push(`<ul><li>${replaceImagesAndLinks(items[0])}</li></ul>`);
+      continue;
+    }
+
+    if (/^\[hutaro_[^\]]+\]$/.test(trimmed)) {
+      flushParagraph(paragraphLines, html);
+      html.push(trimmed);
       continue;
     }
 
