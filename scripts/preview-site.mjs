@@ -121,7 +121,14 @@ function renderTickerShortcode(attrs) {
   const duration = resolveTickerDuration(attrs.speed);
   const colorRaw = String(attrs.color || "rainbow").trim();
   const colorClass = ["rainbow", "white", "accent"].includes(colorRaw.toLowerCase()) ? colorRaw.toLowerCase() : "rainbow";
-  return `<div class="hutaro-ticker hutaro-ticker-color-${escapeHtml(colorClass)}${duration === null ? " hutaro-ticker-static" : ""}" data-hutaro-ticker="1" data-text="${escapeHtml(String(attrs.text || ""))}" data-duration-sec="${escapeHtml(duration === null ? "0" : String(duration))}" data-color="${escapeHtml(colorRaw)}"><span class="hutaro-ticker-track"><span class="hutaro-ticker-text"></span></span></div>`;
+  const rawSize = String(attrs.size || "").trim();
+  let textStyle = "";
+  if (/^\d+(\.\d+)?$/.test(rawSize)) {
+    textStyle = ` style="font-size:${escapeHtml(rawSize)}rem"`;
+  } else if (/^\d+(\.\d+)?(px|rem|em|%)$/.test(rawSize)) {
+    textStyle = ` style="font-size:${escapeHtml(rawSize)}"`;
+  }
+  return `<div class="hutaro-ticker hutaro-ticker-color-${escapeHtml(colorClass)}${duration === null ? " hutaro-ticker-static" : ""}" data-hutaro-ticker="1" data-text="${escapeHtml(String(attrs.text || ""))}" data-duration-sec="${escapeHtml(duration === null ? "0" : String(duration))}" data-color="${escapeHtml(colorRaw)}"><span class="hutaro-ticker-track"><span class="hutaro-ticker-text"${textStyle}></span></span></div>`;
 }
 
 function renderCounterShortcode(attrs) {
@@ -181,12 +188,23 @@ function renderCommentsShortcode(attrs) {
   return `<section class="comments-area comments-area-preview"><h3 class="comment-reply-title">${escapeHtml(title)}</h3><p class="no-comments">ローカルプレビューではコメント機能はダミー表示です。本番WordPressで動作します。</p></section>`;
 }
 
+function renderJokeButtonsShortcode(attrs) {
+  const persist = String(attrs.persist || "none").trim().toLowerCase();
+  const persistMode = persist === "local" ? "local" : "none";
+  const labels = ["いいね", "高評価", "チャンネル登録"];
+  const buttons = labels
+    .map((label) => `<button type="button" class="hutaro-joke-button" data-hutaro-joke-button="${escapeHtml(label)}" aria-pressed="false">${escapeHtml(label)}</button>`)
+    .join("");
+  return `<section class="hutaro-joke-buttons" data-hutaro-joke-buttons="1" data-persist="${persistMode}" aria-label="ジョークボタン">${buttons}</section>`;
+}
+
 function renderShortcodes(html, allPosts) {
   return html
     .replace(/\[hutaro_text([^\]]*)\]/g, (_, rawAttrs) => renderTextShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_ticker([^\]]*)\]/g, (_, rawAttrs) => renderTickerShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_counter([^\]]*)\]/g, (_, rawAttrs) => renderCounterShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_latest_posts([^\]]*)\]/g, (_, rawAttrs) => renderLatestPostsShortcode(parseAttrs(rawAttrs), allPosts))
+    .replace(/\[hutaro_joke_buttons([^\]]*)\]/g, (_, rawAttrs) => renderJokeButtonsShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_comments([^\]]*)\]/g, (_, rawAttrs) => renderCommentsShortcode(parseAttrs(rawAttrs)));
 }
 

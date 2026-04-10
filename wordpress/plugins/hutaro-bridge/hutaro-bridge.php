@@ -21,6 +21,7 @@ final class HutaroBridge {
         add_shortcode('hutaro_ticker', [self::class, 'render_ticker_shortcode']);
         add_shortcode('hutaro_counter', [self::class, 'render_counter_shortcode']);
         add_shortcode('hutaro_latest_posts', [self::class, 'render_latest_posts_shortcode']);
+        add_shortcode('hutaro_joke_buttons', [self::class, 'render_joke_buttons_shortcode']);
         add_shortcode('hutaro_comments', [self::class, 'render_comments_shortcode']);
 
         add_filter('the_content', [self::class, 'transform_md_embed_tags'], 5);
@@ -108,6 +109,7 @@ final class HutaroBridge {
             'text' => '',
             'speed' => 'normal',
             'color' => 'rainbow',
+            'size' => '',
         ], $atts, 'hutaro_ticker');
 
         $duration = self::resolve_ticker_duration($attrs['speed']);
@@ -115,14 +117,21 @@ final class HutaroBridge {
 
         $color = strtolower(trim((string) $attrs['color']));
         $color_class = in_array($color, ['rainbow', 'white', 'accent'], true) ? $color : 'rainbow';
+        $text_style = '';
+        if (preg_match('/^\d+(\.\d+)?$/', $attrs['size'])) {
+            $text_style = ' style="font-size:' . esc_attr($attrs['size']) . 'rem"';
+        } elseif (preg_match('/^\d+(\.\d+)?(px|rem|em|%)$/', $attrs['size'])) {
+            $text_style = ' style="font-size:' . esc_attr($attrs['size']) . '"';
+        }
 
         return sprintf(
-            '<div class="hutaro-ticker hutaro-ticker-color-%s%s" data-hutaro-ticker="1" data-text="%s" data-duration-sec="%s" data-color="%s"><span class="hutaro-ticker-track"><span class="hutaro-ticker-text"></span></span></div>',
+            '<div class="hutaro-ticker hutaro-ticker-color-%s%s" data-hutaro-ticker="1" data-text="%s" data-duration-sec="%s" data-color="%s"><span class="hutaro-ticker-track"><span class="hutaro-ticker-text"%s></span></span></div>',
             esc_attr($color_class),
             $is_static ? ' hutaro-ticker-static' : '',
             esc_attr((string) $attrs['text']),
             esc_attr($duration === null ? '0' : (string) $duration),
-            esc_attr((string) $attrs['color'])
+            esc_attr((string) $attrs['color']),
+            $text_style
         );
     }
 
@@ -208,6 +217,30 @@ final class HutaroBridge {
         wp_reset_postdata();
 
         return '<div class="hutaro-embed-latest-posts"><ul class="post-list">' . implode('', $items) . '</ul></div>';
+    }
+
+    public static function render_joke_buttons_shortcode(array $atts): string {
+        $attrs = shortcode_atts([
+            'persist' => 'none',
+        ], $atts, 'hutaro_joke_buttons');
+
+        $persist = strtolower(trim((string) $attrs['persist']));
+        $persist_mode = in_array($persist, ['none', 'local'], true) ? $persist : 'none';
+        $labels = ['いいね', '高評価', 'チャンネル登録'];
+        $items = [];
+        foreach ($labels as $label) {
+            $items[] = sprintf(
+                '<button type="button" class="hutaro-joke-button" data-hutaro-joke-button="%s" aria-pressed="false">%s</button>',
+                esc_attr($label),
+                esc_html($label)
+            );
+        }
+
+        return sprintf(
+            '<section class="hutaro-joke-buttons" data-hutaro-joke-buttons="1" data-persist="%s" aria-label="ジョークボタン">%s</section>',
+            esc_attr($persist_mode),
+            implode('', $items)
+        );
     }
 
     public static function render_comments_shortcode(array $atts): string {
@@ -519,7 +552,7 @@ final class HutaroBridge {
             return '';
         }
 
-        $allowed = ['count', 'source', 'text', 'size', 'position', 'speed', 'color', 'counterkey', 'digits', 'title', 'class'];
+        $allowed = ['count', 'source', 'text', 'size', 'position', 'speed', 'color', 'counterkey', 'digits', 'title', 'class', 'persist'];
         $parts = [];
         foreach ($allowed as $key) {
             if (!isset($attrs[$key])) {
@@ -543,6 +576,9 @@ final class HutaroBridge {
         }
         if ($type === 'comments') {
             return '[hutaro_comments ' . implode(' ', $parts) . ']';
+        }
+        if ($type === 'jokeButtons') {
+            return '[hutaro_joke_buttons ' . implode(' ', $parts) . ']';
         }
         if ($type === 'text' || $type === 'styledText') {
             return '[hutaro_text ' . implode(' ', $parts) . ']';

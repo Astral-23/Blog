@@ -11,7 +11,15 @@ Hutaro Blog へようこそ！
 
 ![fuko](assets/fuko_top_home.jpg "caption=トレース伊吹風子。かわえぇ〜; width=100%; voices=ほぁぁ...|はぁぁぁ...|はぁ、はぁ、...|はぁ...|はぁっ...|ほぁ...; loading=eager; fetchpriority=high; decoding=async")
 
-明るく楽しいブログをモットーに記事を書いてます✩
+<md-embed
+  type="ticker"
+  text="明るく楽しい記事をモットーに投稿しています✩"
+  speed="0.25"
+  size="1.2rem"
+  color="#4ca014"
+></md-embed>
+
+
 
 
 <br>
@@ -44,7 +52,6 @@ Hutaro Blog へようこそ！
 ## 各種リンク
 ---
 
-[X](https://x.com/inuki_fuko_no_1)... 暗く辛い現実をモットーにポストを投稿しています✩
-
+[X](https://x.com/inuki_fuko_no_1)... 連絡先です✩
 
 ---

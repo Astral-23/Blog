@@ -244,7 +244,7 @@ function convertEmbedTags(text) {
     }
 
     const parts = [];
-    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap"]) {
+    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap", "persist"]) {
       if (attrs[key] && attrs[key].trim()) {
         parts.push(`${key}="${attrs[key].replaceAll('"', "'")}"`);
       }
@@ -272,6 +272,9 @@ function convertEmbedTags(text) {
     }
     if (type === "comments") {
       return `[hutaro_comments${parts.length ? ` ${parts.join(" ")}` : ""}]`;
+    }
+    if (type === "jokeButtons") {
+      return `[hutaro_joke_buttons${parts.length ? ` ${parts.join(" ")}` : ""}]`;
     }
     if (type === "text" || type === "styledText") {
       return `[hutaro_text${parts.length ? ` ${parts.join(" ")}` : ""}]`;
