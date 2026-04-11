@@ -292,3 +292,104 @@
     transform: translate(-50%, calc(-50% - 8px)) scale(1.02);
   }
 }
+
+.hutaro-achievement-layer {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 12000;
+}
+
+.hutaro-achievement-popup {
+  position: fixed;
+  left: 50%;
+  bottom: 2.2rem;
+  transform: translate(-50%, 18px) scale(0.98);
+  width: min(92vw, 540px);
+  background: #000;
+  border: 3px solid #fff;
+  outline: 2px solid #fff;
+  outline-offset: -8px;
+  box-shadow: 0 0 0 2px #000, 0 0 18px rgba(255, 255, 255, 0.22);
+  color: #fff;
+  padding: 1rem 1.1rem 0.96rem;
+  opacity: 0;
+  transition: opacity 2000ms ease, transform 2000ms ease;
+  pointer-events: auto;
+}
+
+.hutaro-achievement-popup.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.hutaro-achievement-popup.is-leaving {
+  opacity: 0;
+  transform: translate(-50%, 10px) scale(0.985);
+}
+
+.hutaro-achievement-title,
+.hutaro-achievement-comment {
+  margin: 0;
+  text-align: center;
+  font-family: "Press Start 2P", "VT323", "MS PGothic", "Osaka", "Courier New", monospace;
+  line-height: 1.5;
+  letter-spacing: 0.04em;
+  text-shadow: 1px 1px 0 #000;
+}
+
+.hutaro-achievement-title {
+  color: #fff;
+  font-size: clamp(0.86rem, 0.74rem + 0.45vw, 1.02rem);
+}
+
+.hutaro-achievement-comment {
+  margin-top: 0.45rem;
+  color: #ffe66d;
+  font-size: clamp(0.68rem, 0.61rem + 0.32vw, 0.8rem);
+}
+
+.hutaro-achievement-char {
+  display: inline-block;
+}
+
+.hutaro-achievement-title .hutaro-achievement-char {
+  animation: hutaro-achievement-blink-main 560ms steps(1, end) infinite;
+  animation-delay: calc(var(--hutaro-char-delay-ms, 0) * -1ms);
+}
+
+.hutaro-achievement-comment .hutaro-achievement-char {
+  animation: hutaro-achievement-blink-sub 680ms steps(1, end) infinite;
+  animation-delay: calc(var(--hutaro-char-delay-ms, 0) * -1ms);
+}
+
+@keyframes hutaro-achievement-blink-main {
+  0% { color: #fff; opacity: 1; }
+  50% { color: #ffe66d; opacity: 1; }
+  100% { color: #fff; opacity: 1; }
+}
+
+@keyframes hutaro-achievement-blink-sub {
+  0% { color: #ffe66d; opacity: 1; }
+  50% { color: #fff; opacity: 1; }
+  100% { color: #ffe66d; opacity: 1; }
+}
+
+@media (max-width: 640px) {
+  .hutaro-achievement-popup {
+    bottom: 1.2rem;
+    width: min(94vw, 540px);
+    padding: 0.84rem 0.72rem 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hutaro-achievement-popup,
+  .hutaro-achievement-popup.is-visible,
+  .hutaro-achievement-popup.is-leaving,
+  .hutaro-achievement-title,
+  .hutaro-achievement-comment {
+    animation: none !important;
+    transition: none !important;
+  }
+}

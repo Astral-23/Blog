@@ -1,6 +1,6 @@
 # 開発者向けガイド（WordPress移行後）
 
-最終更新: 2026-03-22
+最終更新: 2026-04-11
 
 ## 1. 開発方針
 - 配信基盤は WordPress、編集正本は `content/*.md`。
@@ -30,6 +30,7 @@
   - 旧API互換は内部で WordPress REST (`/wp-json/hutaro/v1/*`) にプロキシ
   - 旧ルート互換 rewrite (`/blog/*`, `/blog-tech/*`)
   - CSS/JSは `assets/` 配下を `wp_enqueue_*` で読込
+  - 隠し実績の表示/判定（フロントJS）
 - Scripts:
   - Markdown -> WordPress REST 変換/投入
 
@@ -63,6 +64,17 @@
 - `wp:publish:md` は内部で `assets:optimize` を先に実行します。
 - 最適化を外した検証が必要な場合のみ `SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md` を使用します。
 - Theme/Plugin 変更反映は `TARGET_HOST=<host> TARGET_USER=deploy npm run wp:sync:content` を使用します。
+
+## 6.1 隠し実績の拡張手順（段階導入: 非保存）
+- 実績定義は `wordpress/plugins/hutaro-bridge/assets/hutaro-bridge.js` の `createAchievementSystem()` 内 `definitions` に追加する。
+- 1件の実績定義は `id`, `title`, `comment`, `triggerOn`, `when(state, payload)` を持つ。
+- 画面イベントは `achievements.track(eventName, payload)` で発火する。
+- 現在の初期イベント:
+  - `joke:toggle`
+  - `voice:burst`
+  - `page:view`
+- この段階では永続保存しない（リロードで未達成状態に戻る）。
+- 将来保存へ移行する場合は `createAchievementSystem()` の `state/unlocked` を localStorage または REST API に置換する。
 
 ## 7. 禁止事項
 - WordPress管理画面を正本にする運用。

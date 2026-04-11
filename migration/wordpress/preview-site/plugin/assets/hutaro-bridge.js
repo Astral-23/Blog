@@ -107,7 +107,209 @@
     });
   }
 
-  function bootJokeButtons() {
+  function createAchievementSystem() {
+    var popupTotalMs = 10000;
+    var popupFadeMs = 2000;
+    var jitterPattern = [17, 233, 91, 149, 41, 277, 63, 121, 205, 11, 259, 87, 173, 37, 241, 109];
+    var queue = [];
+    var showing = false;
+    var layer = null;
+    var state = {
+      pageViews: 0,
+      jokeToggleCount: 0,
+      voiceBurstCount: 0,
+      channelRegisterClicksByPath: {}
+    };
+    var unlocked = {};
+
+    var definitions = [
+      {
+        id: 'osawari-fuko',
+        title: '伊吹風子にお触りする',
+        comment: '俺の風子に触るんじゃねぇ！',
+        triggerOn: ['voice:burst'],
+        when: function (_, payload) {
+          var path = String(payload && payload.path ? payload.path : '');
+          var src = String(payload && payload.src ? payload.src : '');
+          return path === '/' && src.indexOf('fuko_top_home.jpg') !== -1;
+        }
+      },
+      {
+        id: 'even-register',
+        title: '偶数回チャンネル登録する',
+        comment: '感動したのでチャンネル登録2回押しました！',
+        triggerOn: ['joke:toggle'],
+        when: function (currentState, payload) {
+          if (!payload || String(payload.label || '') !== 'チャンネル登録') {
+            return false;
+          }
+          var path = String(payload.path || '/');
+          return Number(currentState.channelRegisterClicksByPath[path] || 0) >= 2;
+        }
+      },
+      {
+        id: 'ten-register',
+        title: '10回チャンネル登録する',
+        comment: 'チャンネル登録10回記念です！',
+        triggerOn: ['joke:toggle'],
+        when: function (currentState, payload) {
+          if (!payload || String(payload.label || '') !== 'チャンネル登録') {
+            return false;
+          }
+          var path = String(payload.path || '/');
+          return Number(currentState.channelRegisterClicksByPath[path] || 0) >= 10;
+        }
+      },
+      {
+        id: 'hundred-register',
+        title: '100回チャンネル登録する',
+        comment: 'こんなボタンにマジになってどうするの',
+        triggerOn: ['joke:toggle'],
+        when: function (currentState, payload) {
+          if (!payload || String(payload.label || '') !== 'チャンネル登録') {
+            return false;
+          }
+          var path = String(payload.path || '/');
+          return Number(currentState.channelRegisterClicksByPath[path] || 0) >= 100;
+        }
+      }
+    ];
+
+    function appendStaggeredText(el, text, maxDelayMs) {
+      var chars = Array.from(String(text || ''));
+      var maxDelay = Math.max(1, Math.floor(Number(maxDelayMs) || 1));
+      chars.forEach(function (ch, idx) {
+        var span = document.createElement('span');
+        span.className = 'hutaro-achievement-char';
+        var seededDelay = jitterPattern[idx % jitterPattern.length] % maxDelay;
+        span.style.setProperty('--hutaro-char-delay-ms', String(seededDelay));
+        span.style.setProperty('--hutaro-char-idx', String(idx));
+        span.textContent = ch === ' ' ? '\u00a0' : ch;
+        el.appendChild(span);
+      });
+    }
+
+    function ensureLayer() {
+      if (layer && layer.parentNode) {
+        return layer;
+      }
+      layer = document.createElement('section');
+      layer.className = 'hutaro-achievement-layer';
+      layer.setAttribute('aria-live', 'polite');
+      layer.setAttribute('aria-atomic', 'true');
+      document.body.appendChild(layer);
+      return layer;
+    }
+
+    function showPopup(achievement, onDone) {
+      var host = ensureLayer();
+      var popup = document.createElement('section');
+      popup.className = 'hutaro-achievement-popup';
+      popup.setAttribute('role', 'status');
+      popup.setAttribute('aria-label', '隠し実績');
+
+      var title = document.createElement('p');
+      title.className = 'hutaro-achievement-title';
+      appendStaggeredText(title, '~~~ 隠し実績: ' + achievement.title + ' を達成した ! ~~~', 280);
+
+      var comment = document.createElement('p');
+      comment.className = 'hutaro-achievement-comment';
+      appendStaggeredText(comment, String(achievement.comment || ''), 320);
+
+      popup.appendChild(title);
+      popup.appendChild(comment);
+      host.appendChild(popup);
+
+      window.requestAnimationFrame(function () {
+        popup.classList.add('is-visible');
+      });
+
+      var closed = false;
+      var close = function () {
+        if (closed) {
+          return;
+        }
+        closed = true;
+        popup.classList.remove('is-visible');
+        popup.classList.add('is-leaving');
+        window.setTimeout(function () {
+          if (popup.parentNode) {
+            popup.parentNode.removeChild(popup);
+          }
+          onDone();
+        }, popupFadeMs);
+      };
+
+      window.setTimeout(close, Math.max(0, popupTotalMs - popupFadeMs));
+      popup.addEventListener('click', close);
+    }
+
+    function flushQueue() {
+      if (showing || queue.length === 0) {
+        return;
+      }
+      showing = true;
+      var next = queue.shift();
+      showPopup(next, function () {
+        showing = false;
+        flushQueue();
+      });
+    }
+
+    function unlock(achievement) {
+      unlocked[achievement.id] = true;
+      queue.push(achievement);
+      flushQueue();
+    }
+
+    function updateState(eventName, payload) {
+      if (eventName === 'page:view') {
+        state.pageViews += 1;
+      } else if (eventName === 'joke:toggle') {
+        state.jokeToggleCount += 1;
+        if (payload && String(payload.label || '') === 'チャンネル登録') {
+          var path = String(payload.path || '/');
+          var current = Number(state.channelRegisterClicksByPath[path] || 0);
+          state.channelRegisterClicksByPath[path] = current + 1;
+        }
+      } else if (eventName === 'voice:burst') {
+        state.voiceBurstCount += 1;
+      }
+    }
+
+    function evaluate(eventName, payload) {
+      definitions.forEach(function (achievement) {
+        if (unlocked[achievement.id]) {
+          return;
+        }
+        if (achievement.triggerOn.indexOf(eventName) === -1) {
+          return;
+        }
+        var ok = false;
+        try {
+          ok = Boolean(achievement.when(state, payload || {}, eventName));
+        } catch (_) {
+          ok = false;
+        }
+        if (ok) {
+          unlock(achievement);
+        }
+      });
+    }
+
+    return {
+      track: function (eventName, payload) {
+        if (!eventName) {
+          return;
+        }
+        var safePayload = payload || {};
+        updateState(String(eventName), safePayload);
+        evaluate(String(eventName), safePayload);
+      }
+    };
+  }
+
+  function bootJokeButtons(achievements) {
     function animateJokeButton(button, event) {
       var rect = button.getBoundingClientRect();
       var x = event && Number.isFinite(event.clientX) ? event.clientX - rect.left : rect.width / 2;
@@ -179,6 +381,19 @@
           button.setAttribute('aria-pressed', next ? 'true' : 'false');
           animateJokeButton(button, event);
           spawnJokeParticles(button);
+          var allPressed = true;
+          group.querySelectorAll('[data-hutaro-joke-button]').forEach(function (node) {
+            if (node.getAttribute('aria-pressed') !== 'true') {
+              allPressed = false;
+            }
+          });
+          if (achievements) {
+            achievements.track('joke:toggle', {
+              allPressed: allPressed,
+              label: label,
+              path: window.location.pathname || '/'
+            });
+          }
 
           if (persistMode !== 'local') {
             return;
@@ -196,9 +411,12 @@
   }
 
   document.addEventListener('DOMContentLoaded', function () {
+    var achievements = createAchievementSystem();
+    achievements.track('page:view', { path: window.location.pathname || '/' });
+
     document.querySelectorAll('[data-hutaro-ticker="1"]').forEach(bootTicker);
     bootCounters();
-    bootJokeButtons();
+    bootJokeButtons(achievements);
 
     document.querySelectorAll('figure.hutaro-image[data-voices]').forEach(function (figure) {
       var voicesRaw = figure.getAttribute('data-voices') || '';
@@ -230,6 +448,10 @@
             burst.parentNode.removeChild(burst);
           }
         }, 3000);
+        achievements.track('voice:burst', {
+          path: window.location.pathname || '/',
+          src: img.getAttribute('src') || ''
+        });
       };
 
       img.style.cursor = 'pointer';

@@ -23,6 +23,10 @@ WordPress移行時の互換レイヤーです。
   - `assets/hutaro-bridge.css`
   - `assets/hutaro-bridge.js`
   - `wp_enqueue_style/script` で読込
+- 隠し実績（フロント）
+  - 条件達成時にレトロ風ポップアップ表示
+  - 初期実装は「ページ内セッションのみ記憶（リロードでリセット）」
+  - 実績定義は `assets/hutaro-bridge.js` の `definitions` 配列で拡張
 
 ## インストール
 
