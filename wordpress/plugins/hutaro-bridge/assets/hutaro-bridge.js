@@ -179,6 +179,10 @@
       var chars = Array.from(String(text || ''));
       var maxDelay = Math.max(1, Math.floor(Number(maxDelayMs) || 1));
       chars.forEach(function (ch, idx) {
+        if (ch === '\n') {
+          el.appendChild(document.createElement('br'));
+          return;
+        }
         var span = document.createElement('span');
         span.className = 'hutaro-achievement-char';
         var seededDelay = jitterPattern[idx % jitterPattern.length] % maxDelay;
@@ -210,7 +214,7 @@
 
       var title = document.createElement('p');
       title.className = 'hutaro-achievement-title';
-      appendStaggeredText(title, '~~~ 隠し実績: ' + achievement.title + ' を達成した ! ~~~', 280);
+      appendStaggeredText(title, '隠し実績\n【 ' + achievement.title + ' 】\nを達成しました！', 280);
 
       var comment = document.createElement('p');
       comment.className = 'hutaro-achievement-comment';

@@ -344,7 +344,9 @@
 }
 
 .hutaro-achievement-comment {
-  margin-top: 0.45rem;
+  margin-top: 0.65rem;
+  padding-top: 0.55rem;
+  border-top: 1px dashed rgba(255, 230, 109, 0.85);
   color: #ffe66d;
   font-size: clamp(0.68rem, 0.61rem + 0.32vw, 0.8rem);
 }
