@@ -44,14 +44,15 @@ Hutaro Blog へようこそ！
 ---
 
 <md-embed type="text" position ="center" size="2rem" color="#4ca014">
-4/15あたり
+未定（週一目標！）
 </md-embed>
+- 困ったら機能追加記事を書きます
 
 <br>
 
 ## 各種リンク
 ---
 
-[X](https://x.com/inuki_fuko_no_1)... 連絡先です✩
+[X(伊抜き)](https://x.com/inuki_fuko_no_1)... 連絡先です✩
 
 ---
