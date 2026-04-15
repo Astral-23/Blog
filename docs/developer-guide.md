@@ -54,6 +54,9 @@
 注意:
 - 移行変換は簡易パーサなので、複雑なMarkdown（高度な表・ネストリスト・数式）は崩れる可能性がある。
 - 複雑表現を使う場合は `wp:publish:md` 後に実表示を必ず確認する。
+- 公開日/更新日は `content/.meta/published-at.json` と `content/.meta/updated-at.json` を参照する。
+- `.meta` は `preview` / `wp:export` / `wp:publish:md` 実行時に不足キーを自動補完する（Git履歴の初回コミット日時を優先、取得不可時はファイル時刻）。
+- 運用上は `.meta` の差分をコミットして、公開日を固定すること。
 
 ## 6. テスト/検証手順
 1. `npm run wp:export`

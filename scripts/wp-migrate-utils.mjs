@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 import matter from "gray-matter";
 
 export const CONTENT_ROOT = path.join(process.cwd(), "content");
@@ -8,6 +9,94 @@ const BLOG_TECH_DIR = path.join(CONTENT_ROOT, "blog-tech");
 const HOME_PATH = path.join(CONTENT_ROOT, "home.md");
 const UPDATED_AT_PATH = path.join(CONTENT_ROOT, ".meta", "updated-at.json");
 const PUBLISHED_AT_PATH = path.join(CONTENT_ROOT, ".meta", "published-at.json");
+
+function stableRelativePath(filePath) {
+  return path.relative(process.cwd(), filePath).split(path.sep).join("/");
+}
+
+function sortObjectByKey(record) {
+  return Object.fromEntries(Object.entries(record).sort(([a], [b]) => a.localeCompare(b)));
+}
+
+function writeJsonFile(filePath, value) {
+  const next = `${JSON.stringify(value, null, 2)}\n`;
+  const prev = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : "";
+  if (prev === next) {
+    return false;
+  }
+  fs.mkdirSync(path.dirname(filePath), { recursive: true });
+  fs.writeFileSync(filePath, next, "utf8");
+  return true;
+}
+
+function gitDateForFile(filePath, { first } = { first: false }) {
+  const rel = stableRelativePath(filePath);
+  const cmd = first
+    ? `git log --follow --diff-filter=A --format=%aI -- "${rel}"`
+    : `git log -1 --format=%aI -- "${rel}"`;
+
+  try {
+    const raw = execSync(cmd, { encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+    if (!raw) {
+      return "";
+    }
+    if (!first) {
+      return raw.split(/\r?\n/).find(Boolean) || "";
+    }
+    const lines = raw.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    return lines.at(-1) || "";
+  } catch {
+    return "";
+  }
+}
+
+function fileTimestampFallback(filePath) {
+  try {
+    const stat = fs.statSync(filePath);
+    const candidates = [stat.birthtimeMs, stat.mtimeMs];
+    for (const ms of candidates) {
+      if (Number.isFinite(ms) && ms > 0) {
+        return new Date(ms).toISOString();
+      }
+    }
+    return "";
+  } catch {
+    return "";
+  }
+}
+
+function syncDateMemoForFiles(filePaths) {
+  const publishedMemoRaw = readJsonSafe(PUBLISHED_AT_PATH, {});
+  const updatedMemoRaw = readJsonSafe(UPDATED_AT_PATH, {});
+  const publishedMemo = typeof publishedMemoRaw === "object" && publishedMemoRaw ? { ...publishedMemoRaw } : {};
+  const updatedMemo = typeof updatedMemoRaw === "object" && updatedMemoRaw ? { ...updatedMemoRaw } : {};
+
+  for (const filePath of filePaths) {
+    const rel = stableRelativePath(filePath);
+    const publishedExisting = typeof publishedMemo[rel] === "string" ? publishedMemo[rel].trim() : "";
+    const updatedExisting = typeof updatedMemo[rel] === "string" ? updatedMemo[rel].trim() : "";
+
+    const firstFromGit = gitDateForFile(filePath, { first: true });
+    const latestFromGit = gitDateForFile(filePath, { first: false });
+    const fallbackNow = fileTimestampFallback(filePath) || new Date().toISOString();
+
+    const publishedAt = publishedExisting || firstFromGit || latestFromGit || fallbackNow;
+    const updatedAt = updatedExisting || latestFromGit || publishedAt;
+
+    publishedMemo[rel] = publishedAt;
+    updatedMemo[rel] = updatedAt;
+  }
+
+  const sortedPublishedMemo = sortObjectByKey(publishedMemo);
+  const sortedUpdatedMemo = sortObjectByKey(updatedMemo);
+  writeJsonFile(PUBLISHED_AT_PATH, sortedPublishedMemo);
+  writeJsonFile(UPDATED_AT_PATH, sortedUpdatedMemo);
+
+  return {
+    publishedMemo: sortedPublishedMemo,
+    updatedMemo: sortedUpdatedMemo,
+  };
+}
 
 export function readJsonSafe(filePath, fallback) {
   try {
@@ -123,6 +212,20 @@ function escapeHtml(value) {
     .replaceAll("'", "&#39;");
 }
 
+function renderInlineMath(rawMath) {
+  const input = String(rawMath || "").trim();
+  if (!input) {
+    return "";
+  }
+
+  let out = escapeHtml(input);
+  out = out.replace(/\^\{([^}]+)\}/g, "<sup>$1</sup>");
+  out = out.replace(/\^([A-Za-z0-9+\-]+)/g, "<sup>$1</sup>");
+  out = out.replace(/_\{([^}]+)\}/g, "<sub>$1</sub>");
+  out = out.replace(/_([A-Za-z0-9+\-]+)/g, "<sub>$1</sub>");
+  return `<span class="hutaro-inline-math">${out}</span>`;
+}
+
 function toAssetPlaceholder(url) {
   const normalized = url.trim().replace(/^\.\//, "").replace(/^\/+/, "");
   if (normalized.startsWith("assets/")) {
@@ -217,6 +320,11 @@ function replaceImagesAndLinks(text) {
       return take(escapeHtml(label));
     }
     return take(`<a href="${escapeHtml(safeHref)}">${escapeHtml(label)}</a>`);
+  });
+
+  out = out.replace(/\$([^\n$]+?)\$/g, (_, rawMath) => {
+    const rendered = renderInlineMath(rawMath);
+    return rendered ? take(rendered) : _;
   });
 
   out = escapeHtml(out);
@@ -394,8 +502,11 @@ function stripFirstH1(markdown) {
 }
 
 export function collectMigrationContent() {
-  const publishedMemo = readJsonSafe(PUBLISHED_AT_PATH, {});
-  const updatedMemo = readJsonSafe(UPDATED_AT_PATH, {});
+  const targetFiles = [
+    ...listMarkdownFiles(BLOG_DIR),
+    ...listMarkdownFiles(BLOG_TECH_DIR),
+  ];
+  const { publishedMemo, updatedMemo } = syncDateMemoForFiles(targetFiles);
 
   const posts = [];
   for (const [section, dir] of [
@@ -406,7 +517,7 @@ export function collectMigrationContent() {
       const raw = fs.readFileSync(filePath, "utf8");
       const parsed = matter(raw);
       const slug = path.basename(filePath, ".md");
-      const rel = path.relative(process.cwd(), filePath);
+      const rel = stableRelativePath(filePath);
       const title = typeof parsed.data.title === "string" && parsed.data.title.trim() ? parsed.data.title.trim() : slug;
       const excerpt =
         typeof parsed.data.summary === "string" && parsed.data.summary.trim() ? parsed.data.summary.trim() : "";

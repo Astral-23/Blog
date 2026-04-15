@@ -1,11 +1,11 @@
 # 管理者向け運用ガイド（WordPress本番 / Markdown正本）
 
-最終更新: 2026-03-22
+最終更新: 2026-04-15
 
 ## 0. 30秒版
 1. 記事を `content/blog/*.md` または `content/blog-tech/*.md` に追加・編集
 2. 必要なら画像を `content/assets/` に追加
-3. `npm run wp:publish:md` を実行
+3. `npm run wp:publish:all` を実行
 4. `BASE_URL=https://hutaroblog.com ./scripts/smoke-check.sh` で確認
 
 重要:
@@ -33,6 +33,11 @@ WP_APP_PASSWORD=<WordPress Application Password>
 npm run wp:publish:md
 ```
 
+Theme/Plugin 同期までまとめて実行する場合（推奨）:
+```bash
+npm run wp:publish:all
+```
+
 公開前にローカルで全体プレビューしたい場合:
 ```bash
 npm run preview
@@ -55,6 +60,17 @@ npm run preview
 ```bash
 SKIP_ASSET_OPTIMIZE=1 npm run wp:publish:md
 ```
+
+`wp:publish:all` 用の環境変数（初回のみ）:
+```bash
+cat > .env.deploy.local <<'EOF'
+TARGET_HOST=blog-conoha
+TARGET_USER=deploy
+SUDO_PASSWORD=deploy
+EOF
+```
+- `wp:publish:all` は `.env.wp.local` と `.env.deploy.local` を自動読込します。
+- `TARGET_HOST` / `TARGET_USER` / `SUDO_PASSWORD` を毎回コマンドに直書きする必要はありません。
 
 ## 3. 手動実行（必要時のみ）
 ```bash
@@ -162,4 +178,5 @@ SUDO_PASSWORD='<vpsのsudoパスワード>' \
 TARGET_HOST=blog-conoha TARGET_USER=deploy \
 npm run wp:sync:content
 ```
+- まとめて実行する場合は `npm run wp:publish:all` で同等の処理を実行できます。
 - `wp:sync:content` は `wordpress/themes/hutaro-classic` と `wordpress/plugins/hutaro-bridge` を本番サーバーへ同期し、`sudo` で配置・権限調整（`www-data:www-data`）まで行います。
