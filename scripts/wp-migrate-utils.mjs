@@ -352,7 +352,7 @@ function convertEmbedTags(text) {
     }
 
     const parts = [];
-    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap", "persist"]) {
+    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap", "persist", "url"]) {
       if (attrs[key] && attrs[key].trim()) {
         parts.push(`${key}="${attrs[key].replaceAll('"', "'")}"`);
       }
@@ -384,6 +384,9 @@ function convertEmbedTags(text) {
     if (type === "jokeButtons") {
       return `[hutaro_joke_buttons${parts.length ? ` ${parts.join(" ")}` : ""}]`;
     }
+    if (type === "tweet") {
+      return `[hutaro_tweet${parts.length ? ` ${parts.join(" ")}` : ""}]`;
+    }
     if (type === "text" || type === "styledText") {
       return `[hutaro_text${parts.length ? ` ${parts.join(" ")}` : ""}]`;
     }
@@ -405,7 +408,11 @@ function flushParagraph(lines, htmlChunks) {
     return;
   }
   const rendered = replaceImagesAndLinks(joined);
-  if (/^(<figure\b.*<\/figure>|<img\b[^>]*\/?>|<video\b.*<\/video>|\[hutaro_[^\]]+\])$/is.test(rendered.trim())) {
+  if (
+    /^(<figure\b.*<\/figure>|<img\b[^>]*\/?>|<video\b.*<\/video>|\[hutaro_[^\]]+\]|\[embed\][\s\S]*?\[\/embed\])$/is.test(
+      rendered.trim(),
+    )
+  ) {
     htmlChunks.push(rendered);
     lines.length = 0;
     return;
@@ -414,11 +421,25 @@ function flushParagraph(lines, htmlChunks) {
   lines.length = 0;
 }
 
+function flushBlockquote(lines, htmlChunks) {
+  if (lines.length === 0) {
+    return;
+  }
+  const joined = lines.join(" ").trim();
+  if (!joined) {
+    lines.length = 0;
+    return;
+  }
+  htmlChunks.push(`<blockquote><p>${replaceImagesAndLinks(joined)}</p></blockquote>`);
+  lines.length = 0;
+}
+
 export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
   const pre = convertEmbedTags(source.replace(/\r\n/g, "\n"));
   const lines = pre.split("\n");
   const html = [];
   const paragraphLines = [];
+  const blockquoteLines = [];
   let inCode = false;
 
   for (const line of lines) {
@@ -427,6 +448,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (/^```/.test(trimmed)) {
       if (!inCode) {
         flushParagraph(paragraphLines, html);
+        flushBlockquote(blockquoteLines, html);
         inCode = true;
         html.push("<pre><code>");
       } else {
@@ -443,17 +465,26 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
 
     if (trimmed === "") {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
+      continue;
+    }
+
+    if (/^>\s?/.test(trimmed)) {
+      flushParagraph(paragraphLines, html);
+      blockquoteLines.push(trimmed.replace(/^>\s?/, ""));
       continue;
     }
 
     if (/^<[^>]+>/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
       html.push(line);
       continue;
     }
 
     if (/^---+$/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
       html.push("<hr />");
       continue;
     }
@@ -461,6 +492,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     const heading = trimmed.match(/^(#{1,6})\s+(.+)$/);
     if (heading) {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
       const levelRaw = heading[1].length;
       const level = demoteH1 && levelRaw === 1 ? 2 : levelRaw;
       html.push(`<h${level}>${replaceImagesAndLinks(escapeHtml(heading[2]))}</h${level}>`);
@@ -469,6 +501,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
 
     if (/^[-*]\s+/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
       const items = [trimmed.replace(/^[-*]\s+/, "")];
       html.push(`<ul><li>${replaceImagesAndLinks(items[0])}</li></ul>`);
       continue;
@@ -476,6 +509,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
 
     if (/^\[hutaro_[^\]]+\]$/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
       html.push(trimmed);
       continue;
     }
@@ -484,6 +518,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
   }
 
   flushParagraph(paragraphLines, html);
+  flushBlockquote(blockquoteLines, html);
 
   return html.join("\n");
 }

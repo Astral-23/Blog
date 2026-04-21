@@ -188,6 +188,45 @@ function renderCommentsShortcode(attrs) {
   return `<section class="comments-area comments-area-preview"><h3 class="comment-reply-title">${escapeHtml(title)}</h3><p class="no-comments">ローカルプレビューではコメント機能はダミー表示です。本番WordPressで動作します。</p></section>`;
 }
 
+function canonicalTweetUrl(rawUrl) {
+  const input = String(rawUrl || "").trim();
+  if (!input) {
+    return "";
+  }
+
+  let parsed;
+  try {
+    parsed = new URL(input);
+  } catch {
+    return "";
+  }
+
+  const host = parsed.hostname.toLowerCase();
+  if (host !== "x.com" && host !== "www.x.com" && host !== "twitter.com" && host !== "www.twitter.com") {
+    return "";
+  }
+
+  const match = parsed.pathname.match(/^\/([A-Za-z0-9_]{1,15})\/status(?:es)?\/(\d+)(?:\/)?$/);
+  if (!match) {
+    return "";
+  }
+
+  const [, handle, statusId] = match;
+  return `https://twitter.com/${handle}/status/${statusId}`;
+}
+
+function renderWpEmbedShortcode(rawUrl) {
+  const canonical = canonicalTweetUrl(rawUrl);
+  if (!canonical) {
+    return `<a href="${escapeHtml(String(rawUrl || "").trim())}">${escapeHtml(String(rawUrl || "").trim())}</a>`;
+  }
+  return `<blockquote class="twitter-tweet"><a href="${escapeHtml(canonical)}">${escapeHtml(canonical)}</a></blockquote>`;
+}
+
+function renderTweetShortcode(attrs) {
+  return renderWpEmbedShortcode(attrs.url || "");
+}
+
 function renderJokeButtonsShortcode(attrs) {
   const persist = String(attrs.persist || "none").trim().toLowerCase();
   const persistMode = persist === "local" ? "local" : "none";
@@ -204,6 +243,7 @@ function renderShortcodes(html, allPosts) {
     .replace(/\[hutaro_ticker([^\]]*)\]/g, (_, rawAttrs) => renderTickerShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_counter([^\]]*)\]/g, (_, rawAttrs) => renderCounterShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_latest_posts([^\]]*)\]/g, (_, rawAttrs) => renderLatestPostsShortcode(parseAttrs(rawAttrs), allPosts))
+    .replace(/\[hutaro_tweet([^\]]*)\]/g, (_, rawAttrs) => renderTweetShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_joke_buttons([^\]]*)\]/g, (_, rawAttrs) => renderJokeButtonsShortcode(parseAttrs(rawAttrs)))
     .replace(/\[hutaro_comments([^\]]*)\]/g, (_, rawAttrs) => renderCommentsShortcode(parseAttrs(rawAttrs)));
 }
@@ -253,6 +293,7 @@ ${body}
 </main>
 <script>window.wpApiSettings={root:"/wp-json/"};</script>
 <script src="/plugin/assets/hutaro-bridge.js"></script>
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
 `;
