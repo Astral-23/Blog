@@ -1,0 +1,53 @@
+{
+  "types": {
+    "latestPosts": {
+      "shortcode": "hutaro_latest_posts",
+      "renderer": "latestPosts",
+      "attrs": ["count", "source"]
+    },
+    "ticker": {
+      "shortcode": "hutaro_ticker",
+      "renderer": "ticker",
+      "attrs": ["text", "size", "speed", "color"],
+      "bodyAttr": "text"
+    },
+    "counter": {
+      "shortcode": "hutaro_counter",
+      "renderer": "counter",
+      "attrs": ["counterkey", "digits"]
+    },
+    "comments": {
+      "shortcode": "hutaro_comments",
+      "renderer": "comments",
+      "attrs": ["title"]
+    },
+    "jokeButtons": {
+      "shortcode": "hutaro_joke_buttons",
+      "renderer": "jokeButtons",
+      "attrs": ["persist"]
+    },
+    "tweet": {
+      "shortcode": "hutaro_tweet",
+      "renderer": "tweet",
+      "attrs": ["url"]
+    },
+    "box": {
+      "shortcode": "hutaro_box",
+      "renderer": "box",
+      "attrs": ["html", "text"],
+      "bodyAttr": "text"
+    },
+    "text": {
+      "shortcode": "hutaro_text",
+      "renderer": "text",
+      "attrs": ["text", "size", "position", "color"],
+      "bodyAttr": "text"
+    },
+    "styledText": {
+      "shortcode": "hutaro_text",
+      "renderer": "text",
+      "attrs": ["text", "size", "position", "color"],
+      "bodyAttr": "text"
+    }
+  }
+}

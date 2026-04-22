@@ -21,12 +21,81 @@ function hutaro_classic_enqueue_assets(): void {
 }
 add_action('wp_enqueue_scripts', 'hutaro_classic_enqueue_assets');
 
-function hutaro_classic_nav_items(): array {
+function hutaro_classic_get_site_config(): array {
+    static $config = null;
+    if (is_array($config)) {
+        return $config;
+    }
+
+    $path = dirname(get_template_directory()) . '/../../content/site.json';
+    if (!file_exists($path)) {
+        $config = [];
+        return $config;
+    }
+
+    $raw = file_get_contents($path);
+    if (!is_string($raw) || trim($raw) === '') {
+        $config = [];
+        return $config;
+    }
+
+    $decoded = json_decode($raw, true);
+    $config = is_array($decoded) ? $decoded : [];
+    return $config;
+}
+
+function hutaro_classic_normalize_nav_item(array $item): ?array {
+    $href_raw = isset($item['href']) ? trim((string) $item['href']) : '';
+    $label = isset($item['label']) ? trim((string) $item['label']) : '';
+    if ($href_raw === '' || $label === '') {
+        return null;
+    }
+
+    $href = $href_raw === '/' ? '/' : '/' . trim($href_raw, '/') . '/';
     return [
+        'href' => home_url($href),
+        'label' => $label,
+    ];
+}
+
+function hutaro_classic_nav_items(): array {
+    $default = [
         ['href' => home_url('/'), 'label' => 'home'],
         ['href' => home_url('/blog/'), 'label' => 'blog'],
         ['href' => home_url('/blog-tech/'), 'label' => 'blog(tech)'],
+        ['href' => home_url('/works/'), 'label' => 'works'],
     ];
+
+    $config = hutaro_classic_get_site_config();
+    $navigation = isset($config['navigation']) && is_array($config['navigation']) ? $config['navigation'] : [];
+    $items = [];
+    foreach ($navigation as $item) {
+        if (!is_array($item)) {
+            continue;
+        }
+        $normalized = hutaro_classic_normalize_nav_item($item);
+        if ($normalized !== null) {
+            $items[] = $normalized;
+        }
+    }
+
+    return count($items) > 0 ? $items : $default;
+}
+
+function hutaro_classic_get_section_lead(string $slug): string {
+    $config = hutaro_classic_get_site_config();
+    $key = $slug === 'blog-tech' ? 'blogTechLead' : $slug . 'Lead';
+    $configured = isset($config[$key]) ? trim((string) $config[$key]) : '';
+    if ($configured !== '') {
+        return $configured;
+    }
+
+    $fallback = [
+        'blog' => '✩ゆるふわ日常系コメディ✩',
+        'blog-tech' => '工学部...つまりメイドさんロボが作れるってことか？',
+        'works' => '作ったものやデモ置き場です。',
+    ];
+    return $fallback[$slug] ?? '';
 }
 
 function hutaro_classic_nav_fallback(): void {
@@ -74,7 +143,7 @@ function hutaro_classic_tune_archive_queries(WP_Query $query): void {
         return;
     }
 
-    if ($query->is_category(['blog', 'blog-tech']) || $query->is_home()) {
+    if ($query->is_category(['blog', 'blog-tech', 'works']) || $query->is_home()) {
         $query->set('post_type', 'post');
         $query->set('post_status', 'publish');
         $query->set('posts_per_page', 12);

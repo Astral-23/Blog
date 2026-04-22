@@ -8,9 +8,11 @@
   "fontVariant": "classic",
   "blogLead": "✩ゆるふわ日常系コメディ✩",
   "blogTechLead": "工学部...つまりメイドさんロボが作れるってことか？",
+  "worksLead": "遊んだら片付けてください✩。",
   "navigation": [
     { "href": "/", "label": "home" },
     { "href": "/blog", "label": "blog" },
-    { "href": "/blog-tech", "label": "blog-tech" }
+    { "href": "/blog-tech", "label": "blog-tech" },
+    { "href": "/works", "label": "works" }
   ]
 }

@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>週刊強化学習2026 第2号 [定価298円]</title>
+  <link rel="icon" type="image/png" href="/theme/assets/leaf.png" />
+  <link rel="apple-touch-icon" href="/theme/assets/leaf.png" />
+  <link rel="stylesheet" href="/theme/style.css" />
+  <link rel="stylesheet" href="/plugin/assets/hutaro-bridge.css" />
+  
+</head>
+<body>
+<header class="site-header">
+  <div class="site-header-inner">
+    <a class="site-title" href="/"><span>Hutaro Blog</span><span style="font-size:0.78em;">4th Edition</span></a>
+    <nav aria-label="Global"><ul class="nav-list"><li class="menu-item"><a class="nav-link" href="/">home</a></li>
+<li class="menu-item"><a class="nav-link" href="/blog/">blog</a></li>
+<li class="menu-item current-menu-item"><a class="nav-link" href="/blog-tech/">blog-tech</a></li>
+<li class="menu-item"><a class="nav-link" href="/works/">works</a></li></ul></nav>
+  </div>
+</header>
+<main class="site-main">
+<section class="page-wrap"><h1 class="page-title">週刊強化学習2026 第2号 [定価298円]</h1><div class="post-meta"><p>Published: 2026-04-22</p><p>Updated: 2026-04-22</p></div><article class="entry-content"><h2>目次</h2>
+<hr />
+<ol><li>オセロAI導入</li><li>モンテカルロ木</li><li>実験結果</li></ol>
+<h2>導入</h2>
+<hr />
+<p>オセロAIを作ってみましょう</p>
+<h2>モンテカルロ木</h2>
+<p><a href="https://ja.wikipedia.org/wiki/%E3%83%A2%E3%83%B3%E3%83%86%E3%82%AB%E3%83%AB%E3%83%AD%E6%9C%A8%E6%8E%A2%E7%B4%A2">モンテカルロ木/wikipedia</a></p>
+<p>あたりに説明があります。</p>
+<p>選択において、UCBとepsilon-greedyの両方を実装します。</p>
+<p>シミュレーションについて、今回はシミュレーションをせず、盤面の評価値の計算で代用をします。盤面の評価は<a href="https://note.com/nyanyan_cubetech/n/n17c169271832">こちらのブログ</a>に乗っている物を用いました。</p>
+<p>オセロ環境について、本記事のコードは、Google DeepMindが公開している OpenSpiel (Apache License 2.0) を使用しています。</p>
+<p>実装について、OpenSpielはC++及びpythonで利用できるそうですが......pythonで実装しました。C++での利用方法が良くわからなかったので。</p>
+<h2>実験結果</h2>
+<p>伊抜きちゃんがあんまり深く考えずにやったら普通に負けてしまいました。良い感じなのではないでしょうか。伊抜きちゃん（ガチ）と伊抜きちゃん（適当）の性能は対して変わらないと思いますので。</p>
+<p>ただ。試行時間0.5秒が0.001秒に負ける事がたまにあります。AGIちゃんには程遠い感じです。</p>
+<p>UCBとepsilon-greedyについて、あんまり強さの差がないです。</p>
+<p>特にUCBについて。右辺のルートかかる所（区間の幅の方）に定数かけるじゃないですか。理論的には定まるんですが、実用上手で調整するというやつ。アレ小さい方が良いですね。大きいとランダム探索に近くなってしまうのでしょうか。</p>
+<p>興味がある方はworksから遊べますので、ぜひ。</p>
+<p>では。</p>
+<hr />
+<div class="hutaro-embed-text align-right" style="color:#7b7b7b">読んでくれてありがとう＞ヮ＜</div>
+<div style="height: 3rem;"></div>
+<section class="hutaro-joke-buttons" data-hutaro-joke-buttons="1" data-persist="none" aria-label="ジョークボタン"><button type="button" class="hutaro-joke-button" data-hutaro-joke-button="いいね" aria-pressed="false">いいね</button><button type="button" class="hutaro-joke-button" data-hutaro-joke-button="高評価" aria-pressed="false">高評価</button><button type="button" class="hutaro-joke-button" data-hutaro-joke-button="チャンネル登録" aria-pressed="false">チャンネル登録</button></section>
+<h2>コメント欄</h2>
+<hr />
+<div class="hutaro-embed-text align-left" style="color:#7b7b7b">e-mailアドレスの実在性は問いません。適当で良いですが、揃えた方が便利です。</div>
+<section class="comments-area comments-area-preview"><h3 class="comment-reply-title">コメントを書く</h3><p class="no-comments">ローカルプレビューではコメント機能はダミー表示です。本番WordPressで動作します。</p></section></article></section>
+</main>
+<script>window.wpApiSettings={root:"/wp-json/"};</script>
+<script src="/plugin/assets/hutaro-bridge.js"></script>
+
+<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+</body>
+</html>

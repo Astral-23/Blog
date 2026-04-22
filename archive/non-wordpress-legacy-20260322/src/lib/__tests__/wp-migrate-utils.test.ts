@@ -17,12 +17,14 @@ describe("wp-migrate-utils", () => {
       '<md-embed type="latestPosts" source="all" count="5"></md-embed>',
       '<md-embed type="counter" counterKey="home"></md-embed>',
       '<md-embed type="ticker" text="HELLO" speed="0.1" color="rainbow"></md-embed>',
+      '<md-embed type="box">問題文</md-embed>',
       '<md-embed type="text" position="center">中央</md-embed>',
     ].join("\n");
     const html = markdownToWpHtml(source);
     expect(html).toContain('[hutaro_latest_posts count="5" source="all"]');
     expect(html).toContain('[hutaro_counter counterKey="home"]');
     expect(html).toContain('[hutaro_ticker text="HELLO" speed="0.1" color="rainbow"]');
+    expect(html).toContain('[hutaro_box text="問題文"]');
     expect(html).toContain('[hutaro_text position="center" text="中央"]');
   });
 

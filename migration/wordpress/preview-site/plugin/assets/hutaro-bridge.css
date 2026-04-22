@@ -3,6 +3,21 @@
 .hutaro-embed-text.align-center { text-align: center; }
 .hutaro-embed-text.align-right { text-align: right; }
 
+.hutaro-embed-box {
+  margin: 1.25rem 0;
+  padding: 1rem 1.1rem;
+  border: 1px solid #d7ddd8;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff 0%, #f7faf8 100%);
+  box-shadow: 0 10px 24px rgba(31, 38, 36, 0.06);
+}
+.hutaro-embed-box > :first-child {
+  margin-top: 0;
+}
+.hutaro-embed-box > :last-child {
+  margin-bottom: 0;
+}
+
 .hutaro-embed-counter {
   display: inline-block;
   min-width: 7.8ch;

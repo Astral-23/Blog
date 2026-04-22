@@ -1,0 +1,24 @@
+[Unit]
+Description=Hutaro Othello API
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/hutaroblog/repo
+Environment=OTHELLO_VENV_DIR=/var/www/hutaroblog/.venv-othello
+Environment=OTHELLO_PYTHON_BIN=/usr/bin/python3
+Environment=OTHELLO_API_HOST=127.0.0.1
+Environment=OTHELLO_API_PORT=8765
+ExecStart=/var/www/hutaroblog/repo/scripts/run-othello-api.sh
+Restart=always
+RestartSec=3
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/www/hutaroblog/repo
+
+[Install]
+WantedBy=multi-user.target

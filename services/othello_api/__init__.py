@@ -1,0 +1,2 @@
+"""Othello demo service package."""
+

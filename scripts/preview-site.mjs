@@ -3,15 +3,77 @@ import fs from "node:fs";
 import http from "node:http";
 import path from "node:path";
 import { collectMigrationContent } from "./wp-migrate-utils.mjs";
+import { decodeShortcodeAttr, getShortcodeSpecMap } from "./embed-spec.mjs";
+import {
+  PREVIEW_RENDERERS,
+  escapeHtml,
+  formatWpDate,
+  isValidCounterKey,
+  renderPostCards,
+  sortPostsByPublishedDesc,
+} from "./embed-preview-renderers.mjs";
 
 const cwd = process.cwd();
 const outputDir = path.join(cwd, "migration", "wordpress", "preview-site");
+const siteConfigPath = path.join(cwd, "content", "site.json");
+const previewOthelloApiBase = process.env.HUTARO_OTHELLO_API_BASE || "http://127.0.0.1:8765/api/othello";
 const args = process.argv.slice(2);
 const shouldServe = args.includes("--serve");
 const portArg = args.find((arg) => arg.startsWith("--port="));
 const port = Number(portArg?.replace("--port=", "")) || 4173;
 
 const counterStore = new Map();
+const DEFAULT_NAV_ITEMS = [
+  { href: "/", label: "home", key: "home" },
+  { href: "/blog/", label: "blog", key: "blog" },
+  { href: "/blog-tech/", label: "blog(tech)", key: "blog-tech" },
+  { href: "/works/", label: "works", key: "works" },
+];
+const DEFAULT_SECTION_LEADS = {
+  blog: "✩ゆるふわ日常系コメディ✩",
+  "blog-tech": "工学部...つまりメイドさんロボが作れるってことか？",
+  works: "作ったものやデモ置き場です。",
+};
+
+function normalizeNavItem(item) {
+  if (!item || typeof item !== "object") {
+    return null;
+  }
+
+  const hrefRaw = String(item.href || "").trim();
+  const label = String(item.label || "").trim();
+  if (!hrefRaw || !label) {
+    return null;
+  }
+
+  const href = hrefRaw === "/" ? "/" : `/${hrefRaw.replace(/^\/+|\/+$/g, "")}/`;
+  const key = href === "/" ? "home" : href.replace(/^\/+|\/+$/g, "");
+  return { href, label, key };
+}
+
+function loadSiteConfig() {
+  try {
+    const raw = fs.readFileSync(siteConfigPath, "utf8");
+    const parsed = JSON.parse(raw);
+    return parsed && typeof parsed === "object" ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+
+function resolveNavItems(siteConfig) {
+  const candidates = Array.isArray(siteConfig.navigation) ? siteConfig.navigation.map(normalizeNavItem).filter(Boolean) : [];
+  return candidates.length > 0 ? candidates : DEFAULT_NAV_ITEMS;
+}
+
+function resolveSectionLead(siteConfig, slug) {
+  const key = slug === "blog-tech" ? "blogTechLead" : `${slug}Lead`;
+  const configured = String(siteConfig[key] || "").trim();
+  if (configured) {
+    return configured;
+  }
+  return DEFAULT_SECTION_LEADS[slug] || "";
+}
 
 function ensureDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
@@ -41,225 +103,34 @@ function copyDir(srcDir, dstDir) {
   }
 }
 
-function escapeHtml(value) {
-  return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
 function parseAttrs(raw = "") {
   const out = {};
   for (const [, key, value] of raw.matchAll(/([a-zA-Z_:][a-zA-Z0-9_:\-]*)="([^"]*)"/g)) {
-    out[key.toLowerCase()] = value;
+    out[key.toLowerCase()] = decodeShortcodeAttr(value);
   }
   return out;
 }
-
-function parseDateValue(value) {
-  const time = Date.parse(String(value || ""));
-  return Number.isFinite(time) ? time : 0;
-}
-
-function formatWpDate(value) {
-  const date = new Date(String(value || ""));
-  if (Number.isNaN(date.getTime())) {
-    return "";
-  }
-  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}-${String(date.getUTCDate()).padStart(2, "0")}`;
-}
-
-function sortPostsByPublishedDesc(posts) {
-  return posts.slice().sort((a, b) => parseDateValue(b.publishedAt) - parseDateValue(a.publishedAt));
-}
-
-function resolveTickerDuration(raw) {
-  const normalized = String(raw || "").trim().toLowerCase();
-  if (normalized === "slow") return 12.0;
-  if (normalized === "normal" || normalized === "") return 6.0;
-  if (normalized === "fast") return 3.0;
-
-  const num = Number.parseFloat(normalized);
-  if (!Number.isFinite(num)) return 6.0;
-  if (num <= 0) return null;
-
-  let halfTrip = 1 / (2 * num);
-  if (halfTrip < 0.25) halfTrip = 0.25;
-  if (halfTrip > 60) halfTrip = 60;
-  return halfTrip;
-}
-
-function isValidCounterKey(key) {
-  return /^[a-z0-9][a-z0-9:_/-]{0,127}$/.test(String(key || ""));
-}
-
-function renderTextShortcode(attrs) {
-  const position = ["left", "center", "right"].includes(attrs.position) ? attrs.position : "left";
-  const text = String(attrs.text || "").trim();
-  if (!text) {
-    return "";
-  }
-
-  const style = [];
-  if (/^\d+(\.\d+)?$/.test(String(attrs.size || ""))) {
-    style.push(`font-size:${attrs.size}rem`);
-  } else if (/^\d+(\.\d+)?(px|rem|em|%)$/.test(String(attrs.size || ""))) {
-    style.push(`font-size:${attrs.size}`);
-  }
-
-  if (/^(#[0-9a-fA-F]{3,8}|[a-zA-Z]+|rgb\([^\)]+\)|rgba\([^\)]+\)|hsl\([^\)]+\)|hsla\([^\)]+\))$/.test(String(attrs.color || ""))) {
-    style.push(`color:${attrs.color}`);
-  }
-
-  const styleAttr = style.length > 0 ? ` style="${escapeHtml(style.join(";"))}"` : "";
-  return `<div class="hutaro-embed-text align-${escapeHtml(position)}"${styleAttr}>${escapeHtml(text)}</div>`;
-}
-
-function renderTickerShortcode(attrs) {
-  const duration = resolveTickerDuration(attrs.speed);
-  const colorRaw = String(attrs.color || "rainbow").trim();
-  const colorClass = ["rainbow", "white", "accent"].includes(colorRaw.toLowerCase()) ? colorRaw.toLowerCase() : "rainbow";
-  const rawSize = String(attrs.size || "").trim();
-  let textStyle = "";
-  if (/^\d+(\.\d+)?$/.test(rawSize)) {
-    textStyle = ` style="font-size:${escapeHtml(rawSize)}rem"`;
-  } else if (/^\d+(\.\d+)?(px|rem|em|%)$/.test(rawSize)) {
-    textStyle = ` style="font-size:${escapeHtml(rawSize)}"`;
-  }
-  return `<div class="hutaro-ticker hutaro-ticker-color-${escapeHtml(colorClass)}${duration === null ? " hutaro-ticker-static" : ""}" data-hutaro-ticker="1" data-text="${escapeHtml(String(attrs.text || ""))}" data-duration-sec="${escapeHtml(duration === null ? "0" : String(duration))}" data-color="${escapeHtml(colorRaw)}"><span class="hutaro-ticker-track"><span class="hutaro-ticker-text"${textStyle}></span></span></div>`;
-}
-
-function renderCounterShortcode(attrs) {
-  let key = String(attrs.counterkey || attrs.key || "home").trim();
-  if (!isValidCounterKey(key)) {
-    key = "home";
-  }
-
-  let digits = Number.parseInt(String(attrs.digits || "7"), 10);
-  if (!Number.isFinite(digits) || digits < 1) {
-    digits = 7;
-  }
-
-  return `<span class="hutaro-embed-counter" data-hutaro-counter="1" data-key="${escapeHtml(key)}" data-digits="${digits}">0000000</span>`;
-}
-
-function renderPostCards(posts) {
-  if (posts.length === 0) {
-    return "<p>まだ記事がありません。</p>";
-  }
-
-  const items = posts
-    .map((post) => {
-      const date = formatWpDate(post.publishedAt);
-      const excerpt = post.excerpt ? `<p>${escapeHtml(post.excerpt)}</p>` : "";
-      return `<li class="post-card"><a class="post-card-link" href="/${post.section}/${post.slug}/"><p class="post-date">${escapeHtml(date)}</p><h2>${escapeHtml(post.title)}</h2>${excerpt}</a></li>`;
-    })
-    .join("\n");
-
-  return `<ul class="post-list">${items}</ul>`;
-}
-
-function renderLatestPostsShortcode(attrs, allPosts) {
-  let count = Number.parseInt(String(attrs.count || "5"), 10);
-  if (!Number.isFinite(count) || count < 1) {
-    count = 5;
-  }
-  if (count > 20) {
-    count = 20;
-  }
-
-  const source = String(attrs.source || "all").trim();
-  const scoped = source === "blog" || source === "blog-tech"
-    ? allPosts.filter((post) => post.section === source)
-    : allPosts.filter((post) => post.section === "blog" || post.section === "blog-tech");
-
-  const posts = sortPostsByPublishedDesc(scoped).slice(0, count);
-  if (posts.length === 0) {
-    return '<p class="hutaro-embed-note">最新記事はまだありません。</p>';
-  }
-
-  return `<div class="hutaro-embed-latest-posts">${renderPostCards(posts)}</div>`;
-}
-
-function renderCommentsShortcode(attrs) {
-  const title = String(attrs.title || "コメントを書く").trim() || "コメントを書く";
-  return `<section class="comments-area comments-area-preview"><h3 class="comment-reply-title">${escapeHtml(title)}</h3><p class="no-comments">ローカルプレビューではコメント機能はダミー表示です。本番WordPressで動作します。</p></section>`;
-}
-
-function canonicalTweetUrl(rawUrl) {
-  const input = String(rawUrl || "").trim();
-  if (!input) {
-    return "";
-  }
-
-  let parsed;
-  try {
-    parsed = new URL(input);
-  } catch {
-    return "";
-  }
-
-  const host = parsed.hostname.toLowerCase();
-  if (host !== "x.com" && host !== "www.x.com" && host !== "twitter.com" && host !== "www.twitter.com") {
-    return "";
-  }
-
-  const match = parsed.pathname.match(/^\/([A-Za-z0-9_]{1,15})\/status(?:es)?\/(\d+)(?:\/)?$/);
-  if (!match) {
-    return "";
-  }
-
-  const [, handle, statusId] = match;
-  return `https://twitter.com/${handle}/status/${statusId}`;
-}
-
-function renderWpEmbedShortcode(rawUrl) {
-  const canonical = canonicalTweetUrl(rawUrl);
-  if (!canonical) {
-    return `<a href="${escapeHtml(String(rawUrl || "").trim())}">${escapeHtml(String(rawUrl || "").trim())}</a>`;
-  }
-  return `<blockquote class="twitter-tweet"><a href="${escapeHtml(canonical)}">${escapeHtml(canonical)}</a></blockquote>`;
-}
-
-function renderTweetShortcode(attrs) {
-  return renderWpEmbedShortcode(attrs.url || "");
-}
-
-function renderJokeButtonsShortcode(attrs) {
-  const persist = String(attrs.persist || "none").trim().toLowerCase();
-  const persistMode = persist === "local" ? "local" : "none";
-  const labels = ["いいね", "高評価", "チャンネル登録"];
-  const buttons = labels
-    .map((label) => `<button type="button" class="hutaro-joke-button" data-hutaro-joke-button="${escapeHtml(label)}" aria-pressed="false">${escapeHtml(label)}</button>`)
-    .join("");
-  return `<section class="hutaro-joke-buttons" data-hutaro-joke-buttons="1" data-persist="${persistMode}" aria-label="ジョークボタン">${buttons}</section>`;
-}
-
 function renderShortcodes(html, allPosts) {
-  return html
-    .replace(/\[hutaro_text([^\]]*)\]/g, (_, rawAttrs) => renderTextShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_ticker([^\]]*)\]/g, (_, rawAttrs) => renderTickerShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_counter([^\]]*)\]/g, (_, rawAttrs) => renderCounterShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_latest_posts([^\]]*)\]/g, (_, rawAttrs) => renderLatestPostsShortcode(parseAttrs(rawAttrs), allPosts))
-    .replace(/\[hutaro_tweet([^\]]*)\]/g, (_, rawAttrs) => renderTweetShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_joke_buttons([^\]]*)\]/g, (_, rawAttrs) => renderJokeButtonsShortcode(parseAttrs(rawAttrs)))
-    .replace(/\[hutaro_comments([^\]]*)\]/g, (_, rawAttrs) => renderCommentsShortcode(parseAttrs(rawAttrs)));
+  let rendered = html;
+  for (const [shortcode, shortcodeSpec] of Object.entries(getShortcodeSpecMap())) {
+    const rendererName = String(shortcodeSpec?.renderer || "").trim();
+    const renderer = PREVIEW_RENDERERS[rendererName];
+    if (!renderer) {
+      continue;
+    }
+    const pattern = new RegExp(`\\[${shortcode}([^\\]]*)\\]`, "g");
+    rendered = rendered.replace(pattern, (_, rawAttrs) => renderer(parseAttrs(rawAttrs), allPosts));
+  }
+
+  return rendered;
 }
 
 function renderContent(html, allPosts) {
   return renderShortcodes(String(html || ""), allPosts).replaceAll("__HUTARO_MEDIA__/", "/assets/");
 }
 
-function renderNav(active) {
-  const items = [
-    { href: "/", label: "home", key: "home" },
-    { href: "/blog/", label: "blog", key: "blog" },
-    { href: "/blog-tech/", label: "blog(tech)", key: "blog-tech" },
-  ];
-
-  const links = items
+function renderNav(active, navItems) {
+  const links = navItems
     .map((item) => {
       const activeClass = item.key === active ? " current-menu-item" : "";
       return `<li class="menu-item${activeClass}"><a class="nav-link" href="${item.href}">${item.label}</a></li>`;
@@ -269,7 +140,7 @@ function renderNav(active) {
   return `<ul class="nav-list">${links}</ul>`;
 }
 
-function frameTemplate({ title, activeNav, body }) {
+function frameTemplate({ title, activeNav, body, navItems, extraHead = "", extraBodyEnd = "" }) {
   return `<!doctype html>
 <html lang="ja">
 <head>
@@ -280,12 +151,13 @@ function frameTemplate({ title, activeNav, body }) {
   <link rel="apple-touch-icon" href="/theme/assets/leaf.png" />
   <link rel="stylesheet" href="/theme/style.css" />
   <link rel="stylesheet" href="/plugin/assets/hutaro-bridge.css" />
+  ${extraHead}
 </head>
 <body>
 <header class="site-header">
   <div class="site-header-inner">
     <a class="site-title" href="/"><span>Hutaro Blog</span><span style="font-size:0.78em;">4th Edition</span></a>
-    <nav aria-label="Global">${renderNav(activeNav)}</nav>
+    <nav aria-label="Global">${renderNav(activeNav, navItems)}</nav>
   </div>
 </header>
 <main class="site-main">
@@ -293,32 +165,39 @@ ${body}
 </main>
 <script>window.wpApiSettings={root:"/wp-json/"};</script>
 <script src="/plugin/assets/hutaro-bridge.js"></script>
+${extraBodyEnd}
 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>
 `;
 }
 
-function buildHomePage(homeHtml, posts) {
+function buildHomePage(homeHtml, posts, siteConfig) {
   const body = `<section class="page-wrap"><article class="entry-content">${renderContent(homeHtml, posts)}</article></section>`;
-  return frameTemplate({ title: "home", activeNav: "home", body });
+  return frameTemplate({ title: "home", activeNav: "home", body, navItems: resolveNavItems(siteConfig) });
 }
 
-function buildArchivePage({ slug, title, lead, posts }) {
+function buildArchivePage({ slug, title, lead, posts, siteConfig }) {
   const cards = renderPostCards(sortPostsByPublishedDesc(posts));
   const leadHtml = lead ? `<p class="page-lead">${escapeHtml(lead)}</p>` : "";
   const body = `<section class="page-wrap"><h1 class="page-title">${escapeHtml(title)}</h1>${leadHtml}${cards}</section>`;
-  return frameTemplate({ title: slug, activeNav: slug, body });
+  return frameTemplate({ title: slug, activeNav: slug, body, navItems: resolveNavItems(siteConfig) });
 }
 
-function buildSinglePage(post, posts) {
+function buildSinglePage(post, posts, siteConfig) {
   const published = formatWpDate(post.publishedAt);
   const updated = formatWpDate(post.updatedAt);
   const body = `<section class="page-wrap"><h1 class="page-title">${escapeHtml(post.title)}</h1><div class="post-meta"><p>Published: ${escapeHtml(published)}</p><p>Updated: ${escapeHtml(updated)}</p></div><article class="entry-content">${renderContent(post.contentHtml, posts)}</article></section>`;
-  return frameTemplate({ title: post.title, activeNav: post.section, body });
+  const isOthelloDemo = post.section === "works" && post.slug === "othello";
+  const extraHead = isOthelloDemo ? '<link rel="stylesheet" href="/plugin/assets/othello-demo.css" />' : "";
+  const extraBodyEnd = isOthelloDemo
+    ? `<script>window.HUTARO_OTHELLO_CONFIG={apiBase:${JSON.stringify(previewOthelloApiBase)}};</script>\n<script src="/plugin/assets/othello-demo.js"></script>`
+    : "";
+  return frameTemplate({ title: post.title, activeNav: post.section, body, navItems: resolveNavItems(siteConfig), extraHead, extraBodyEnd });
 }
 
 function buildAll() {
+  const siteConfig = loadSiteConfig();
   const payload = collectMigrationContent();
   const posts = payload.posts || [];
 
@@ -333,22 +212,27 @@ function buildAll() {
     fs.readFileSync(path.join(cwd, "wordpress", "themes", "hutaro-classic", "style.css"), "utf8"),
   );
 
-  writeFile(path.join(outputDir, "index.html"), buildHomePage(payload.home?.contentHtml || "", posts));
+  writeFile(path.join(outputDir, "index.html"), buildHomePage(payload.home?.contentHtml || "", posts, siteConfig));
 
   const blogPosts = posts.filter((post) => post.section === "blog");
   const techPosts = posts.filter((post) => post.section === "blog-tech");
+  const worksPosts = posts.filter((post) => post.section === "works");
 
   writeFile(
     path.join(outputDir, "blog", "index.html"),
-    buildArchivePage({ slug: "blog", title: "blog", lead: "✩ゆるふわ日常系コメディ✩", posts: blogPosts }),
+    buildArchivePage({ slug: "blog", title: "blog", lead: resolveSectionLead(siteConfig, "blog"), posts: blogPosts, siteConfig }),
   );
   writeFile(
     path.join(outputDir, "blog-tech", "index.html"),
-    buildArchivePage({ slug: "blog-tech", title: "blog-tech", lead: "工学部...つまりメイドさんロボが作れるってことか？", posts: techPosts }),
+    buildArchivePage({ slug: "blog-tech", title: "blog-tech", lead: resolveSectionLead(siteConfig, "blog-tech"), posts: techPosts, siteConfig }),
+  );
+  writeFile(
+    path.join(outputDir, "works", "index.html"),
+    buildArchivePage({ slug: "works", title: "works", lead: resolveSectionLead(siteConfig, "works"), posts: worksPosts, siteConfig }),
   );
 
   for (const post of posts) {
-    writeFile(path.join(outputDir, post.section, post.slug, "index.html"), buildSinglePage(post, posts));
+    writeFile(path.join(outputDir, post.section, post.slug, "index.html"), buildSinglePage(post, posts, siteConfig));
   }
 
   return { outputDir, postCount: posts.length };

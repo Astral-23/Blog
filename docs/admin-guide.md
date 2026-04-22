@@ -113,13 +113,17 @@ WordPress側で互換変換されます。
 <md-embed type="latestPosts" source="all" count="5"></md-embed>
 <md-embed type="ticker" text="WELCOME TO MY BLOG" speed="0.08" color="rainbow"></md-embed>
 <md-embed type="counter"></md-embed>
+<md-embed type="box">補足テキスト</md-embed>
 <md-embed type="text" position="center" size="lg" color="accent">見出しテキスト</md-embed>
+<md-embed type="tweet" url="https://x.com/.../status/..."></md-embed>
+<md-embed type="jokeButtons"></md-embed>
 <md-embed type="comments" title="コメントを書く"></md-embed>
 ```
 
 補足:
 - `type="comments"` を置いた位置にコメント欄を表示できます（記事ページのみ）。
 - `title` でフォーム見出しを変更できます。
+- ローカル確認は `npm run preview` または `npm run preview:build` を使います。
 
 ## 6. コメント機能（標準 + Anti-spam）
 

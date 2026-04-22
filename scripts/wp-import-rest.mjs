@@ -302,6 +302,7 @@ async function main() {
 
   const blogCategoryId = await ensureCategory("blog");
   const techCategoryId = await ensureCategory("blog-tech");
+  const worksCategoryId = await ensureCategory("works");
 
   const homeContent = (() => {
     let out = payload.home.contentHtml;
@@ -337,7 +338,11 @@ async function main() {
   }
 
   for (const post of payload.posts ?? []) {
-    const categoryId = post.section === "blog-tech" ? techCategoryId : blogCategoryId;
+    const categoryId = post.section === "blog-tech"
+      ? techCategoryId
+      : post.section === "works"
+        ? worksCategoryId
+        : blogCategoryId;
     const saved = await upsertPost(post, categoryId, mediaMap);
     if (saved?.__skipped) {
       console.log(`[wp-import-rest] skipped unchanged post ${post.section}/${post.slug} id=${saved.id}`);
@@ -351,6 +356,10 @@ async function main() {
     [
       techCategoryId,
       new Set((payload.posts ?? []).filter((post) => post.section === "blog-tech").map((post) => post.slug)),
+    ],
+    [
+      worksCategoryId,
+      new Set((payload.posts ?? []).filter((post) => post.section === "works").map((post) => post.slug)),
     ],
   ]);
 

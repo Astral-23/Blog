@@ -15,14 +15,13 @@ final class HutaroBridge {
     private const COUNTER_KEY_PATTERN = '/^[a-z0-9][a-z0-9:_\/-]{0,127}$/';
     private const COUNTER_HIT_COOLDOWN_SEC = 1800;
     private const BOT_UA_PATTERN = '/(bot|crawler|spider|slurp|bingpreview|mediapartners-google|adsbot|google web preview|headless|selenium|phantomjs|curl|wget|python-requests|go-http-client|axios|httpclient|scrapy|uptimerobot|pingdom|statuscake|datadog|newrelic|lighthouse)/i';
+    private static ?array $embed_spec_cache = null;
+    private static ?array $shortcode_renderer_map_cache = null;
 
     public static function init(): void {
-        add_shortcode('hutaro_text', [self::class, 'render_text_shortcode']);
-        add_shortcode('hutaro_ticker', [self::class, 'render_ticker_shortcode']);
-        add_shortcode('hutaro_counter', [self::class, 'render_counter_shortcode']);
-        add_shortcode('hutaro_latest_posts', [self::class, 'render_latest_posts_shortcode']);
-        add_shortcode('hutaro_joke_buttons', [self::class, 'render_joke_buttons_shortcode']);
-        add_shortcode('hutaro_comments', [self::class, 'render_comments_shortcode']);
+        foreach (array_keys(self::get_shortcode_renderer_map()) as $shortcode) {
+            add_shortcode($shortcode, [self::class, 'render_embed_shortcode']);
+        }
 
         add_filter('the_content', [self::class, 'transform_md_embed_tags'], 5);
         add_filter('the_content', [self::class, 'harden_external_links'], 20);
@@ -52,9 +51,13 @@ final class HutaroBridge {
 
         $css_path = $base_dir . 'hutaro-bridge.css';
         $js_path = $base_dir . 'hutaro-bridge.js';
+        $othello_css_path = $base_dir . 'othello-demo.css';
+        $othello_js_path = $base_dir . 'othello-demo.js';
 
         $css_ver = file_exists($css_path) ? (string) filemtime($css_path) : '0.1.0';
         $js_ver = file_exists($js_path) ? (string) filemtime($js_path) : '0.1.0';
+        $othello_css_ver = file_exists($othello_css_path) ? (string) filemtime($othello_css_path) : '0.1.0';
+        $othello_js_ver = file_exists($othello_js_path) ? (string) filemtime($othello_js_path) : '0.1.0';
 
         wp_enqueue_style(
             'hutaro-bridge-style',
@@ -69,6 +72,44 @@ final class HutaroBridge {
             $js_ver,
             true
         );
+
+        if (!self::is_othello_demo_page()) {
+            return;
+        }
+
+        wp_enqueue_style(
+            'hutaro-othello-demo-style',
+            $base_url . 'othello-demo.css',
+            ['hutaro-bridge-style'],
+            $othello_css_ver
+        );
+        wp_enqueue_script(
+            'hutaro-othello-demo-script',
+            $base_url . 'othello-demo.js',
+            [],
+            $othello_js_ver,
+            true
+        );
+        wp_add_inline_script(
+            'hutaro-othello-demo-script',
+            'window.HUTARO_OTHELLO_CONFIG = ' . wp_json_encode([
+                'apiBase' => home_url('/api/othello'),
+            ]) . ';',
+            'before'
+        );
+    }
+
+    private static function is_othello_demo_page(): bool {
+        if (!is_singular('post')) {
+            return false;
+        }
+
+        $post_id = get_queried_object_id();
+        if ($post_id <= 0) {
+            return false;
+        }
+
+        return get_post_field('post_name', $post_id) === 'othello' && has_category('works', $post_id);
     }
 
     public static function render_text_shortcode(array $atts, string $content = ''): string {
@@ -104,7 +145,32 @@ final class HutaroBridge {
         );
     }
 
-    public static function render_ticker_shortcode(array $atts): string {
+    public static function render_box_shortcode(array $atts, string $content = ''): string {
+        $attrs = shortcode_atts([
+            'html' => '',
+            'text' => '',
+        ], $atts, 'hutaro_box');
+
+        $html = trim((string) $attrs['html']);
+        if ($html !== '') {
+            return sprintf(
+                '<div class="hutaro-embed-box">%s</div>',
+                wp_kses_post(do_shortcode($html))
+            );
+        }
+
+        $text = trim($attrs['text']) !== '' ? $attrs['text'] : $content;
+        if (trim($text) === '') {
+            return '';
+        }
+
+        return sprintf(
+            '<div class="hutaro-embed-box"><p>%s</p></div>',
+            wp_kses_post(nl2br(do_shortcode($text)))
+        );
+    }
+
+    public static function render_ticker_shortcode(array $atts, string $content = ''): string {
         $attrs = shortcode_atts([
             'text' => '',
             'speed' => 'normal',
@@ -135,7 +201,7 @@ final class HutaroBridge {
         );
     }
 
-    public static function render_counter_shortcode(array $atts): string {
+    public static function render_counter_shortcode(array $atts, string $content = ''): string {
         $attrs = shortcode_atts([
             'key' => 'home',
             'counterKey' => '',
@@ -159,7 +225,7 @@ final class HutaroBridge {
         );
     }
 
-    public static function render_latest_posts_shortcode(array $atts): string {
+    public static function render_latest_posts_shortcode(array $atts, string $content = ''): string {
         $attrs = shortcode_atts([
             'source' => 'all',
             'count' => '5',
@@ -219,7 +285,7 @@ final class HutaroBridge {
         return '<div class="hutaro-embed-latest-posts"><ul class="post-list">' . implode('', $items) . '</ul></div>';
     }
 
-    public static function render_joke_buttons_shortcode(array $atts): string {
+    public static function render_joke_buttons_shortcode(array $atts, string $content = ''): string {
         $attrs = shortcode_atts([
             'persist' => 'none',
         ], $atts, 'hutaro_joke_buttons');
@@ -243,7 +309,7 @@ final class HutaroBridge {
         );
     }
 
-    public static function render_comments_shortcode(array $atts): string {
+    public static function render_comments_shortcode(array $atts, string $content = ''): string {
         if (!is_singular() || post_password_required()) {
             return '';
         }
@@ -275,6 +341,73 @@ final class HutaroBridge {
 
         unset($GLOBALS['hutaro_comments_embed_args']);
         return $html;
+    }
+
+    public static function render_embed_shortcode($atts, string $content = '', string $tag = ''): string {
+        $renderer = self::get_shortcode_renderer($tag);
+        if ($renderer === '') {
+            return '';
+        }
+
+        $method = self::renderer_to_method_name($renderer);
+        if ($method === '' || !method_exists(self::class, $method)) {
+            return '';
+        }
+
+        return (string) self::{$method}(self::decode_shortcode_atts(is_array($atts) ? $atts : []), self::decode_shortcode_attr((string) $content));
+    }
+
+    public static function render_tweet_shortcode(array $atts, string $content = ''): string {
+        $attrs = shortcode_atts([
+            'url' => '',
+        ], $atts, 'hutaro_tweet');
+
+        $url = trim((string) $attrs['url']);
+        if ($url === '') {
+            return '';
+        }
+
+        return self::render_wp_embed_shortcode($url);
+    }
+
+    private static function canonical_tweet_url(string $raw_url): string {
+        $input = trim($raw_url);
+        if ($input === '') {
+            return '';
+        }
+
+        $parts = wp_parse_url($input);
+        if (!is_array($parts)) {
+            return '';
+        }
+
+        $host = isset($parts['host']) ? strtolower((string) $parts['host']) : '';
+        if (!in_array($host, ['x.com', 'www.x.com', 'twitter.com', 'www.twitter.com'], true)) {
+            return '';
+        }
+
+        $path = isset($parts['path']) ? (string) $parts['path'] : '';
+        if (!preg_match('#^/([A-Za-z0-9_]{1,15})/status(?:es)?/(\d+)(?:/)?$#', $path, $matches)) {
+            return '';
+        }
+
+        return 'https://twitter.com/' . $matches[1] . '/status/' . $matches[2];
+    }
+
+    private static function render_wp_embed_shortcode(string $raw_url): string {
+        $canonical = self::canonical_tweet_url($raw_url);
+        if ($canonical === '') {
+            $fallback = trim($raw_url);
+            if ($fallback === '') {
+                return '';
+            }
+            return sprintf('<a href="%1$s">%1$s</a>', esc_url($fallback));
+        }
+
+        return sprintf(
+            '<blockquote class="twitter-tweet"><a href="%1$s">%1$s</a></blockquote>',
+            esc_url($canonical)
+        );
     }
 
     public static function register_rest_routes(): void {
@@ -325,8 +458,10 @@ final class HutaroBridge {
         // Next.js互換の公開URLをWordPressへマップ
         add_rewrite_rule('^blog/?$', 'index.php?category_name=blog', 'top');
         add_rewrite_rule('^blog-tech/?$', 'index.php?category_name=blog-tech', 'top');
+        add_rewrite_rule('^works/?$', 'index.php?category_name=works', 'top');
         add_rewrite_rule('^blog/([^/]+)/?$', 'index.php?category_name=blog&name=$matches[1]', 'top');
         add_rewrite_rule('^blog-tech/([^/]+)/?$', 'index.php?category_name=blog-tech&name=$matches[1]', 'top');
+        add_rewrite_rule('^works/([^/]+)/?$', 'index.php?category_name=works&name=$matches[1]', 'top');
 
         // 旧API互換
         add_rewrite_rule('^api/health/?$', 'index.php?hutaro_legacy_api=health', 'top');
@@ -347,11 +482,17 @@ final class HutaroBridge {
         }
 
         $slug = (string) $term->slug;
-        if ($slug !== 'blog' && $slug !== 'blog-tech') {
+        if ($slug !== 'blog' && $slug !== 'blog-tech' && $slug !== 'works') {
             return;
         }
 
-        $base = $slug === 'blog' ? '/blog/' : '/blog-tech/';
+        if ($slug === 'blog') {
+            $base = '/blog/';
+        } elseif ($slug === 'blog-tech') {
+            $base = '/blog-tech/';
+        } else {
+            $base = '/works/';
+        }
         $paged = max(1, intval(get_query_var('paged')));
         $target = $paged > 1 ? home_url($base . 'page/' . $paged . '/') : home_url($base);
         $target = trailingslashit($target);
@@ -552,39 +693,185 @@ final class HutaroBridge {
             return '';
         }
 
-        $allowed = ['count', 'source', 'text', 'size', 'position', 'speed', 'color', 'counterkey', 'digits', 'title', 'class', 'persist'];
+        $spec = self::get_embed_type_spec($type);
+        if ($spec === null) {
+            return '';
+        }
+
+        $allowed = isset($spec['attrs']) && is_array($spec['attrs']) ? $spec['attrs'] : [];
         $parts = [];
         foreach ($allowed as $key) {
             if (!isset($attrs[$key])) {
                 continue;
             }
-            $parts[] = sprintf('%s="%s"', $key, esc_attr((string) $attrs[$key]));
+            $parts[] = sprintf('%s="%s"', $key === 'counterkey' ? 'counterKey' : $key, esc_attr(self::escape_shortcode_attr((string) $attrs[$key])));
         }
 
-        if ($body !== '' && !isset($attrs['text'])) {
-            $parts[] = sprintf('text="%s"', esc_attr($body));
+        $body_attr = isset($spec['bodyAttr']) ? trim((string) $spec['bodyAttr']) : '';
+        if ($body !== '' && $body_attr !== '' && !isset($attrs[$body_attr])) {
+            $parts[] = sprintf('%s="%s"', $body_attr, esc_attr(self::escape_shortcode_attr($body)));
         }
 
-        if ($type === 'latestPosts') {
-            return '[hutaro_latest_posts ' . implode(' ', $parts) . ']';
-        }
-        if ($type === 'ticker') {
-            return '[hutaro_ticker ' . implode(' ', $parts) . ']';
-        }
-        if ($type === 'counter') {
-            return '[hutaro_counter ' . implode(' ', $parts) . ']';
-        }
-        if ($type === 'comments') {
-            return '[hutaro_comments ' . implode(' ', $parts) . ']';
-        }
-        if ($type === 'jokeButtons') {
-            return '[hutaro_joke_buttons ' . implode(' ', $parts) . ']';
-        }
-        if ($type === 'text' || $type === 'styledText') {
-            return '[hutaro_text ' . implode(' ', $parts) . ']';
+        $shortcode = isset($spec['shortcode']) ? trim((string) $spec['shortcode']) : '';
+        if ($shortcode === '') {
+            return '';
         }
 
-        return '';
+        return '[' . $shortcode . (count($parts) > 0 ? ' ' . implode(' ', $parts) : '') . ']';
+    }
+
+    private static function get_embed_type_spec(string $type): ?array {
+        $spec = self::get_embed_spec();
+        if (!isset($spec['types']) || !is_array($spec['types'])) {
+            return null;
+        }
+        if (!isset($spec['types'][$type]) || !is_array($spec['types'][$type])) {
+            return null;
+        }
+        return $spec['types'][$type];
+    }
+
+    private static function get_embed_spec(): array {
+        if (self::$embed_spec_cache !== null) {
+            return self::$embed_spec_cache;
+        }
+
+        $path = plugin_dir_path(__FILE__) . 'embed-spec.json';
+        if (file_exists($path)) {
+            $raw = file_get_contents($path);
+            if (is_string($raw) && $raw !== '') {
+                $decoded = json_decode($raw, true);
+                if (is_array($decoded) && isset($decoded['types']) && is_array($decoded['types'])) {
+                    self::$embed_spec_cache = $decoded;
+                    return self::$embed_spec_cache;
+                }
+            }
+        }
+
+        self::$embed_spec_cache = [
+            'types' => [
+                'latestPosts' => [
+                    'shortcode' => 'hutaro_latest_posts',
+                    'renderer' => 'latestPosts',
+                    'attrs' => ['count', 'source'],
+                ],
+                'ticker' => [
+                    'shortcode' => 'hutaro_ticker',
+                    'renderer' => 'ticker',
+                    'attrs' => ['text', 'size', 'speed', 'color'],
+                    'bodyAttr' => 'text',
+                ],
+                'counter' => [
+                    'shortcode' => 'hutaro_counter',
+                    'renderer' => 'counter',
+                    'attrs' => ['counterkey', 'digits'],
+                ],
+                'comments' => [
+                    'shortcode' => 'hutaro_comments',
+                    'renderer' => 'comments',
+                    'attrs' => ['title'],
+                ],
+                'jokeButtons' => [
+                    'shortcode' => 'hutaro_joke_buttons',
+                    'renderer' => 'jokeButtons',
+                    'attrs' => ['persist'],
+                ],
+                'tweet' => [
+                    'shortcode' => 'hutaro_tweet',
+                    'renderer' => 'tweet',
+                    'attrs' => ['url'],
+                ],
+                'box' => [
+                    'shortcode' => 'hutaro_box',
+                    'renderer' => 'box',
+                    'attrs' => ['html', 'text'],
+                    'bodyAttr' => 'text',
+                ],
+                'text' => [
+                    'shortcode' => 'hutaro_text',
+                    'renderer' => 'text',
+                    'attrs' => ['text', 'size', 'position', 'color'],
+                    'bodyAttr' => 'text',
+                ],
+                'styledText' => [
+                    'shortcode' => 'hutaro_text',
+                    'renderer' => 'text',
+                    'attrs' => ['text', 'size', 'position', 'color'],
+                    'bodyAttr' => 'text',
+                ],
+            ],
+        ];
+
+        return self::$embed_spec_cache;
+    }
+
+    private static function get_shortcode_renderer_map(): array {
+        if (self::$shortcode_renderer_map_cache !== null) {
+            return self::$shortcode_renderer_map_cache;
+        }
+
+        $map = [];
+        $spec = self::get_embed_spec();
+        $types = isset($spec['types']) && is_array($spec['types']) ? $spec['types'] : [];
+        foreach ($types as $type_spec) {
+            if (!is_array($type_spec)) {
+                continue;
+            }
+            $shortcode = isset($type_spec['shortcode']) ? trim((string) $type_spec['shortcode']) : '';
+            $renderer = isset($type_spec['renderer']) ? trim((string) $type_spec['renderer']) : '';
+            if ($shortcode === '' || $renderer === '' || isset($map[$shortcode])) {
+                continue;
+            }
+            $map[$shortcode] = $renderer;
+        }
+
+        self::$shortcode_renderer_map_cache = $map;
+        return self::$shortcode_renderer_map_cache;
+    }
+
+    private static function get_shortcode_renderer(string $tag): string {
+        $map = self::get_shortcode_renderer_map();
+        return isset($map[$tag]) ? (string) $map[$tag] : '';
+    }
+
+    private static function renderer_to_method_name(string $renderer): string {
+        $normalized = preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', trim($renderer));
+        if (!is_string($normalized)) {
+            return '';
+        }
+        $normalized = strtolower(str_replace([' ', '-'], '_', $normalized));
+        if ($normalized === '') {
+            return '';
+        }
+        return 'render_' . $normalized . '_shortcode';
+    }
+
+    private static function escape_shortcode_attr(string $value): string {
+        return str_replace(
+            ["\\", "\r\n", "\r", "\n", '"'],
+            ["\\\\", "\n", "\n", "\\n", "'"],
+            $value
+        );
+    }
+
+    private static function decode_shortcode_attr(string $value): string {
+        return str_replace(
+            ["\0", "\\n"],
+            ["\\", "\n"],
+            str_replace("\\\\", "\0", $value)
+        );
+    }
+
+    private static function decode_shortcode_atts(array $atts): array {
+        $decoded = [];
+        foreach ($atts as $key => $value) {
+            if (is_string($value)) {
+                $decoded[$key] = self::decode_shortcode_attr($value);
+                continue;
+            }
+            $decoded[$key] = $value;
+        }
+        return $decoded;
     }
 
     private static function parse_element_attrs(DOMElement $node): array {

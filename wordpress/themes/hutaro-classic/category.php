@@ -3,13 +3,7 @@ if (!defined('ABSPATH')) { exit; }
 get_header();
 $slug = get_queried_object() && isset(get_queried_object()->slug) ? (string) get_queried_object()->slug : '';
 $title = $slug !== '' ? $slug : single_cat_title('', false);
-$lead = '';
-if ($slug === 'blog') {
-    $lead = '✩ゆるふわ日常系コメディ✩';
-}
-if ($slug === 'blog-tech') {
-    $lead = '工学部...つまりメイドさんロボが作れるってことか？';
-}
+$lead = $slug !== '' ? hutaro_classic_get_section_lead($slug) : '';
 ?>
 <section class="page-wrap">
   <h1 class="page-title"><?php echo esc_html($title); ?></h1>

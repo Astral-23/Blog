@@ -2,13 +2,20 @@ import fs from "node:fs";
 import path from "node:path";
 import { execSync } from "node:child_process";
 import matter from "gray-matter";
+import { getEmbedTypeSpec, mdEmbedToShortcode } from "./embed-spec.mjs";
 
 export const CONTENT_ROOT = path.join(process.cwd(), "content");
 const BLOG_DIR = path.join(CONTENT_ROOT, "blog");
 const BLOG_TECH_DIR = path.join(CONTENT_ROOT, "blog-tech");
+const WORKS_DIR = path.join(CONTENT_ROOT, "works");
 const HOME_PATH = path.join(CONTENT_ROOT, "home.md");
 const UPDATED_AT_PATH = path.join(CONTENT_ROOT, ".meta", "updated-at.json");
 const PUBLISHED_AT_PATH = path.join(CONTENT_ROOT, ".meta", "published-at.json");
+const SECTION_DIRS = [
+  ["blog", BLOG_DIR],
+  ["blog-tech", BLOG_TECH_DIR],
+  ["works", WORKS_DIR],
+];
 
 function stableRelativePath(filePath) {
   return path.relative(process.cwd(), filePath).split(path.sep).join("/");
@@ -346,51 +353,11 @@ function convertEmbedTags(text) {
     for (const [, k, v] of attrsRaw.matchAll(/([a-zA-Z_:][a-zA-Z0-9_:\-]*)\s*=\s*"([^"]*)"/g)) {
       attrs[k.toLowerCase()] = v;
     }
-    const type = (attrs.type || "").trim();
-    if (!type) {
-      return "";
+    const typeSpec = getEmbedTypeSpec(attrs.type || "");
+    if (typeSpec?.renderer === "box" && !attrs.html && String(body || "").trim()) {
+      attrs.html = markdownToWpHtml(String(body).trim(), { demoteH1: false });
     }
-
-    const parts = [];
-    for (const key of ["count", "source", "text", "size", "position", "speed", "color", "digits", "class", "gap", "persist", "url"]) {
-      if (attrs[key] && attrs[key].trim()) {
-        parts.push(`${key}="${attrs[key].replaceAll('"', "'")}"`);
-      }
-    }
-    if (Object.prototype.hasOwnProperty.call(attrs, "title")) {
-      parts.push(`title="${String(attrs.title).replaceAll('"', "'")}"`);
-    }
-
-    if (attrs.counterkey && attrs.counterkey.trim()) {
-      parts.push(`counterKey="${attrs.counterkey.replaceAll('"', "'")}"`);
-    }
-
-    if (!attrs.text && body.trim()) {
-      parts.push(`text="${body.trim().replaceAll('"', "'")}"`);
-    }
-
-    if (type === "latestPosts") {
-      return `[hutaro_latest_posts${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "ticker") {
-      return `[hutaro_ticker${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "counter") {
-      return `[hutaro_counter${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "comments") {
-      return `[hutaro_comments${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "jokeButtons") {
-      return `[hutaro_joke_buttons${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "tweet") {
-      return `[hutaro_tweet${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    if (type === "text" || type === "styledText") {
-      return `[hutaro_text${parts.length ? ` ${parts.join(" ")}` : ""}]`;
-    }
-    return "";
+    return mdEmbedToShortcode(attrs, body);
   };
 
   return text
@@ -434,12 +401,29 @@ function flushBlockquote(lines, htmlChunks) {
   lines.length = 0;
 }
 
+function flushList(listState, htmlChunks) {
+  if (!listState.type || listState.items.length === 0) {
+    listState.type = null;
+    listState.items = [];
+    return;
+  }
+
+  const tag = listState.type === "ordered" ? "ol" : "ul";
+  const itemsHtml = listState.items
+    .map((item) => `<li>${replaceImagesAndLinks(item)}</li>`)
+    .join("");
+  htmlChunks.push(`<${tag}>${itemsHtml}</${tag}>`);
+  listState.type = null;
+  listState.items = [];
+}
+
 export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
   const pre = convertEmbedTags(source.replace(/\r\n/g, "\n"));
   const lines = pre.split("\n");
   const html = [];
   const paragraphLines = [];
   const blockquoteLines = [];
+  const listState = { type: null, items: [] };
   let inCode = false;
 
   for (const line of lines) {
@@ -449,6 +433,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
       if (!inCode) {
         flushParagraph(paragraphLines, html);
         flushBlockquote(blockquoteLines, html);
+        flushList(listState, html);
         inCode = true;
         html.push("<pre><code>");
       } else {
@@ -466,11 +451,13 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (trimmed === "") {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
+      flushList(listState, html);
       continue;
     }
 
     if (/^>\s?/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
+      flushList(listState, html);
       blockquoteLines.push(trimmed.replace(/^>\s?/, ""));
       continue;
     }
@@ -478,6 +465,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (/^<[^>]+>/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
+      flushList(listState, html);
       html.push(line);
       continue;
     }
@@ -485,6 +473,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (/^---+$/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
+      flushList(listState, html);
       html.push("<hr />");
       continue;
     }
@@ -493,6 +482,7 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (heading) {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
+      flushList(listState, html);
       const levelRaw = heading[1].length;
       const level = demoteH1 && levelRaw === 1 ? 2 : levelRaw;
       html.push(`<h${level}>${replaceImagesAndLinks(escapeHtml(heading[2]))}</h${level}>`);
@@ -502,23 +492,40 @@ export function markdownToWpHtml(source, { demoteH1 = false } = {}) {
     if (/^[-*]\s+/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
-      const items = [trimmed.replace(/^[-*]\s+/, "")];
-      html.push(`<ul><li>${replaceImagesAndLinks(items[0])}</li></ul>`);
+      if (listState.type && listState.type !== "unordered") {
+        flushList(listState, html);
+      }
+      listState.type = "unordered";
+      listState.items.push(trimmed.replace(/^[-*]\s+/, ""));
+      continue;
+    }
+
+    if (/^\d+\.\s+/.test(trimmed)) {
+      flushParagraph(paragraphLines, html);
+      flushBlockquote(blockquoteLines, html);
+      if (listState.type && listState.type !== "ordered") {
+        flushList(listState, html);
+      }
+      listState.type = "ordered";
+      listState.items.push(trimmed.replace(/^\d+\.\s+/, ""));
       continue;
     }
 
     if (/^\[hutaro_[^\]]+\]$/.test(trimmed)) {
       flushParagraph(paragraphLines, html);
       flushBlockquote(blockquoteLines, html);
+      flushList(listState, html);
       html.push(trimmed);
       continue;
     }
 
+    flushList(listState, html);
     paragraphLines.push(line);
   }
 
   flushParagraph(paragraphLines, html);
   flushBlockquote(blockquoteLines, html);
+  flushList(listState, html);
 
   return html.join("\n");
 }
@@ -537,17 +544,11 @@ function stripFirstH1(markdown) {
 }
 
 export function collectMigrationContent() {
-  const targetFiles = [
-    ...listMarkdownFiles(BLOG_DIR),
-    ...listMarkdownFiles(BLOG_TECH_DIR),
-  ];
+  const targetFiles = SECTION_DIRS.flatMap(([, dir]) => listMarkdownFiles(dir));
   const { publishedMemo, updatedMemo } = syncDateMemoForFiles(targetFiles);
 
   const posts = [];
-  for (const [section, dir] of [
-    ["blog", BLOG_DIR],
-    ["blog-tech", BLOG_TECH_DIR],
-  ]) {
+  for (const [section, dir] of SECTION_DIRS) {
     for (const filePath of listMarkdownFiles(dir)) {
       const raw = fs.readFileSync(filePath, "utf8");
       const parsed = matter(raw);
