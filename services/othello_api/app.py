@@ -6,16 +6,16 @@ from pydantic import BaseModel, Field
 
 from .contracts import AiConfig, ModeName, PASS_ACTION, SessionSettings, StrategyName
 from .session import OthelloServiceUnavailableError
-from .store import OthelloSessionStore
+from .store import OthelloSessionStore, session_ttl_from_env
 
 
 class SessionCreateRequest(BaseModel):
     mode: ModeName = "human_black"
-    black_ai_time_limit_seconds: float = Field(default=1.0, ge=0.0001, le=30.0)
-    white_ai_time_limit_seconds: float = Field(default=1.0, ge=0.0001, le=30.0)
+    black_ai_time_limit_seconds: float = Field(default=1.0, ge=0.001, le=1.0)
+    white_ai_time_limit_seconds: float = Field(default=1.0, ge=0.001, le=1.0)
     black_ai_strategy: StrategyName = "UCT"
     white_ai_strategy: StrategyName = "UCT"
-    ai_vs_ai_delay_ms: int = Field(default=500, ge=0, le=5000)
+    ai_vs_ai_delay_ms: int = Field(default=500, ge=0, le=30000)
 
     def to_settings(self) -> SessionSettings:
         return SessionSettings(
@@ -36,7 +36,7 @@ class ActionRequest(BaseModel):
     action: int = Field(ge=0, le=PASS_ACTION)
 
 
-store = OthelloSessionStore()
+store = OthelloSessionStore(ttl_seconds=session_ttl_from_env())
 app = FastAPI(title="Hutaro Othello API", version="0.1.0")
 app.add_middleware(
     CORSMiddleware,

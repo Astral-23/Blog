@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any
 
-from Agent import OthelloAgent, SearchResult
+from .agent import OthelloAgent, SearchResult
 
 from .contracts import (
     PASS_ACTION,
@@ -114,7 +114,7 @@ class OthelloSession:
         if action not in self.state.legal_actions():
             raise ValueError("Illegal action.")
         row, col = divmod(action, 8)
-        self._apply_action(action, f"あなたは {row + 1}{chr(ord('a') + col)} に打ちました。")
+        self._apply_action(action, f"{self._player_name(current_player)} は {row + 1}{chr(ord('a') + col)} に打ちました。")
         self._maybe_auto_pass()
         self._refresh_metrics()
         return self.to_snapshot()
@@ -274,7 +274,6 @@ class OthelloSession:
             self.last_iterations = None
         else:
             self.last_evaluation = self._display_evaluation()
-            self.last_iterations = None
         if self.history:
             self.history[self.history_index].evaluation = self.last_evaluation
             self.history[self.history_index].iterations = self.last_iterations
@@ -284,7 +283,8 @@ class OthelloSession:
 
     def _player_name(self, player_id: int) -> str:
         if self.player_types.get(player_id) == "human":
-            return "あなた"
+            stone = "黒" if player_id == 0 else "白"
+            return f"あなた（{stone}）"
         stone = "黒" if player_id == 0 else "白"
         return f"伊抜きちゃんロボ（{stone}）"
 

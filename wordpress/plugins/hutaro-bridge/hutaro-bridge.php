@@ -24,6 +24,7 @@ final class HutaroBridge {
         }
 
         add_filter('the_content', [self::class, 'transform_md_embed_tags'], 5);
+        add_filter('the_content', [self::class, 'inject_othello_demo_mount'], 6);
         add_filter('the_content', [self::class, 'harden_external_links'], 20);
 
         add_action('rest_api_init', [self::class, 'register_rest_routes']);
@@ -110,6 +111,24 @@ final class HutaroBridge {
         }
 
         return get_post_field('post_name', $post_id) === 'othello' && has_category('works', $post_id);
+    }
+
+    public static function inject_othello_demo_mount(string $content): string {
+        if (!self::is_othello_demo_page()) {
+            return $content;
+        }
+
+        if (strpos($content, 'data-hutaro-othello-app="1"') !== false || strpos($content, "data-hutaro-othello-app='1'") !== false) {
+            return $content;
+        }
+
+        $mount = '<div data-hutaro-othello-app="1"></div>';
+        $trimmed = trim($content);
+        if ($trimmed === '') {
+            return $mount;
+        }
+
+        return $mount . "\n\n" . $content;
     }
 
     public static function render_text_shortcode(array $atts, string $content = ''): string {

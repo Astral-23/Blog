@@ -1,11 +1,15 @@
 from __future__ import annotations
 
+import os
 import time
 import uuid
 from dataclasses import dataclass
 
 from .contracts import SessionSettings
 from .session import OthelloSession
+
+
+DEFAULT_SESSION_TTL_SECONDS = 10 * 60
 
 
 @dataclass
@@ -15,7 +19,7 @@ class StoredSession:
 
 
 class OthelloSessionStore:
-    def __init__(self, ttl_seconds: int = 60 * 60):
+    def __init__(self, ttl_seconds: int = DEFAULT_SESSION_TTL_SECONDS):
         self.ttl_seconds = ttl_seconds
         self._sessions: dict[str, StoredSession] = {}
 
@@ -43,3 +47,12 @@ class OthelloSessionStore:
         ]
         for session_id in stale:
             del self._sessions[session_id]
+
+
+def session_ttl_from_env() -> int:
+    raw = os.getenv("OTHELLO_SESSION_TTL_SECONDS", str(DEFAULT_SESSION_TTL_SECONDS))
+    try:
+        value = int(raw)
+    except ValueError:
+        return DEFAULT_SESSION_TTL_SECONDS
+    return max(60, value)

@@ -36,6 +36,10 @@
     return String(row + 1) + String.fromCharCode("a".charCodeAt(0) + col);
   }
 
+  function parseNumberInput(input) {
+    return Number((input && input.value) || 0);
+  }
+
   function OthelloApp(root) {
     this.root = root;
     this.sessionId = "";
@@ -145,15 +149,15 @@
     group.appendChild(this.wrapLabeled("対局モード", this.modeSelect));
 
     this.blackTimeInput = this.createInput("number", "1.0");
-    this.blackTimeInput.min = "0.0001";
-    this.blackTimeInput.max = "30";
+    this.blackTimeInput.min = "0.001";
+    this.blackTimeInput.max = "1";
     this.blackTimeInput.step = "0.1";
     this.blackTimeField = this.wrapLabeled("黒AI 思考時間（秒）", this.blackTimeInput);
     group.appendChild(this.blackTimeField);
 
     this.whiteTimeInput = this.createInput("number", "1.0");
-    this.whiteTimeInput.min = "0.0001";
-    this.whiteTimeInput.max = "30";
+    this.whiteTimeInput.min = "0.001";
+    this.whiteTimeInput.max = "1";
     this.whiteTimeInput.step = "0.1";
     this.whiteTimeField = this.wrapLabeled("白AI 思考時間（秒）", this.whiteTimeInput);
     group.appendChild(this.whiteTimeField);
@@ -174,7 +178,7 @@
 
     this.delayInput = this.createInput("number", "500");
     this.delayInput.min = "0";
-    this.delayInput.max = "5000";
+    this.delayInput.max = "30000";
     this.delayInput.step = "100";
     this.delayField = this.wrapLabeled("AI vs AI 表示待ち時間（ms）", this.delayInput);
     group.appendChild(this.delayField);
@@ -269,16 +273,21 @@
   };
 
   OthelloApp.prototype.createSession = function () {
+    var validationError = this.validateSettings();
+    if (validationError) {
+      this.showError(validationError);
+      return;
+    }
     this.clearError();
     this.setBusy(true);
     window.clearTimeout(this.autoTimer);
     var payload = {
       mode: this.modeSelect.value,
-      black_ai_time_limit_seconds: Number(this.blackTimeInput.value || 1),
-      white_ai_time_limit_seconds: Number(this.whiteTimeInput.value || 1),
+      black_ai_time_limit_seconds: parseNumberInput(this.blackTimeInput) || 1,
+      white_ai_time_limit_seconds: parseNumberInput(this.whiteTimeInput) || 1,
       black_ai_strategy: this.blackStrategySelect.value,
       white_ai_strategy: this.whiteStrategySelect.value,
-      ai_vs_ai_delay_ms: Number(this.delayInput.value || 500)
+      ai_vs_ai_delay_ms: parseNumberInput(this.delayInput) || 500
     };
     this.request("/session", {
       method: "POST",
@@ -462,6 +471,20 @@
   OthelloApp.prototype.setBusy = function (busy) {
     this.busy = !!busy;
     this.updateButtons();
+  };
+
+  OthelloApp.prototype.validateSettings = function () {
+    var blackTime = parseNumberInput(this.blackTimeInput);
+    var whiteTime = parseNumberInput(this.whiteTimeInput);
+    var delay = parseNumberInput(this.delayInput);
+
+    if (!(blackTime >= 0.001 && blackTime <= 1) || !(whiteTime >= 0.001 && whiteTime <= 1)) {
+      return "AIの思考時間は [0.001, 1] に収まる必要があります。";
+    }
+    if (!(delay >= 0 && delay <= 30000)) {
+      return "表示待ち時間は 0 以上 30000 以下にしてください。";
+    }
+    return "";
   };
 
   OthelloApp.prototype.showError = function (error) {
